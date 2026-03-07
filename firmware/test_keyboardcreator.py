@@ -5,7 +5,7 @@ from kbdlayoutdata import VIRTUAL_KEY_ORDER, LAYERS, \
     MODIFIERS, MACROS
 from keyboardcreator import KeyboardCreator
 from keyboardhalf import VKeyPressEvent
-from keysdata import LPU, NO_KEY
+from keysdata import LPU, NO_KEY, LPM
 from reactions import KeyCmdKind, KeyCmd
 
 
@@ -30,10 +30,10 @@ class KeyboardCreatorTest(unittest.TestCase):
                                   modifiers=MODIFIERS,
                                   macros=MACROS,
                                   )
-        keyboard = creator.create()
+        virt_keyboard = creator.create()
 
-        vkey_event = VKeyPressEvent(vkey_serial=LPU, pressed=True)
-        act_reaction_commands = list(keyboard.update(time=210, vkey_events=[vkey_event]))   # todo: not working with 10
+        vkey_event = VKeyPressEvent(vkey_serial=LPM, pressed=True)
+        actual_reactions = list(virt_keyboard.update(time=210, vkey_events=[vkey_event]))   # todo: not working with 10
 
-        expected_reaction_commands = [KeyCmd(kind=KeyCmdKind.KEY_PRESS, key_code=KC.Q)]
-        self.assertEqual(expected_reaction_commands, act_reaction_commands)
+        expected_reactions = [KeyCmd(kind=KeyCmdKind.KEY_PRESS, key_code=KC.A)]
+        self.assertEqual(expected_reactions, actual_reactions)
