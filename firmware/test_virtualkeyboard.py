@@ -1,5 +1,4 @@
 import unittest
-from typing import Iterator
 
 from adafruit_hid.keycode import Keycode as KC
 from base import KeyCode, TimeInMs, VirtualKeySerial, PhysicalKeySerial
@@ -293,25 +292,6 @@ class RealVKeyboardTest(unittest.TestCase):
                                   )
         self._virt_keyboard = creator.create()
 
-    def test_W_wrong(self):
-        """
-        614919:,other=[+ri1u]
-        614973:,self=[+lmu]
-        615043:,self=[-lmu],->[+e,-e]
-        615119:,,->[+LShift]
-        615149:,other=[-ri1u],->[-LShift]
-        """
-        press_w = KeyCmd(KeyCmdKind.KEY_PRESS, KC.W)
-        release_w = KeyCmd(KeyCmdKind.KEY_RELEASE, KC.W)
-        press_shift = KeyCmd(KeyCmdKind.KEY_PRESS, KC.LEFT_SHIFT)
-        release_shift = KeyCmd(KeyCmdKind.KEY_RELEASE, KC.LEFT_SHIFT)
-
-        self._step(19, [VKeyPressEvent(RI1U, pressed=True)], expected_reactions=[])
-        self._step(73, [VKeyPressEvent(LRU, pressed=True)], expected_reactions=[])
-        self._step(143, [VKeyPressEvent(LRU, pressed=False)], expected_reactions=[press_w, release_w])
-        self._step(219, [], expected_reactions=[press_shift])
-        self._step(249, [VKeyPressEvent(RI1U, pressed=False)], expected_reactions=[release_shift])
-
     def test_W_correct(self):
         """
         614919:,other=[+ri1u]
@@ -319,6 +299,20 @@ class RealVKeyboardTest(unittest.TestCase):
         615043:,self=[-lmu],->[+e,-e]
         615119:,,->[+LShift]
         615149:,other=[-ri1u],->[-LShift]
+
+        +--------------|--------------+
+        | +------------|-+            |
+        | |    u       | |            |
+        | +------------|-+            |
+        |   +------+   |              |
+        |   |  w   |   |              |
+        |   +------+   |              |
+        +--------------|--------------+
+                   |     |
+                   |   -Shift
+               +Shift+w-w
+
+          +: press, -: release
         """
         press_w = KeyCmd(KeyCmdKind.KEY_PRESS, KC.W)
         release_w = KeyCmd(KeyCmdKind.KEY_RELEASE, KC.W)

@@ -148,19 +148,36 @@ class VirtualKeyboard:
                       hold -> inactive
         """
         if tap_hold_key in self._undecided_tap_hold_keys:
+            tap_hold_key_press_times: list[TimeInMs] = []
+
+            # other tap/hold: undecided -> hold
+            tap_hold_keys_to_remove: list[TapHoldKey] = []
+
+            for tap_hold_key2 in self._undecided_tap_hold_keys:
+                if tap_hold_key2.serial != tap_hold_key.serial:
+                    if tap_hold_key2.last_press_time < tap_hold_key.last_press_time:
+                        yield from self._on_begin_holding_reaction(tap_hold_key2)
+                        tap_hold_key_press_times.append(tap_hold_key2.last_press_time)
+                        tap_hold_keys_to_remove.append(tap_hold_key2)
+
+            for tap_hold_key2 in tap_hold_keys_to_remove:
+                self._undecided_tap_hold_keys.remove(tap_hold_key2)
+
             # tap/hold: tap (press + release)
             one_key_reactions = self._cur_layer.get(tap_hold_key.serial)  # for simplifying, take current layer
             if one_key_reactions:
                 yield from one_key_reactions.on_press_key_reaction_commands
                 yield from one_key_reactions.on_release_key_reaction_commands
+                tap_hold_key_press_times.append(tap_hold_key.last_press_time)
 
             self._undecided_tap_hold_keys.remove(tap_hold_key)
 
             # simple: deferred -> press
             simple_keys_to_remove: list[SimpleKey] = []
+            oldest_tap_hold_key_press_time = min(tap_hold_key_press_times)
 
             for simple_key in self._deferred_simple_keys:
-                if simple_key.last_press_time > tap_hold_key.last_press_time:
+                if simple_key.last_press_time > oldest_tap_hold_key_press_time:
                     # simple: -> press
                     one_key_reactions = self._cur_layer.get(simple_key.serial)  # for simplifying, take current layer
                     if one_key_reactions:
@@ -206,7 +223,7 @@ class VirtualKeyboard:
         for tap_hold_key in tap_hold_keys_to_remove:
             self._undecided_tap_hold_keys.remove(tap_hold_key)
 
-        # other simples: deferred -> press (cause tap/hold is decided now)
+        # other simple keys: deferred -> press (cause tap/hold is decided now)
         if len(tap_hold_key_press_times) > 0:
             oldest_tap_hold_key_press_time = min(tap_hold_key_press_times)
             simple_keys_to_remove: list[SimpleKey] = []
@@ -225,7 +242,7 @@ class VirtualKeyboard:
             for simple_key2 in simple_keys_to_remove:
                 self._deferred_simple_keys.remove(simple_key2)
 
-        # this simple:
+        # this (simple) key:
         one_key_reactions = self._cur_layer.get(simple_key.serial)  # for simplifying, take current layer
 
         if simple_key in self._deferred_simple_keys:
