@@ -7,7 +7,8 @@ from keyboardhalf import VKeyPressEvent, KeyGroup, \
     KeyboardHalf
 from virtualkeyboard import SimpleKey, TapHoldKey, ModKey, \
     VirtualKeyboard, Layer
-from kbdlayoutdata import VIRTUAL_KEY_ORDER, LAYERS, MODIFIERS, MACROS
+from kbdlayoutdata import VIRTUAL_KEY_ORDER, LAYERS, MODIFIERS
+from macrosdata import MACROS
 from reactions import KeyCmdKind, KeyCmd, ReactionCommands, OneKeyReactions
 from keysdata import RIGHT_THUMB_DOWN, RIGHT_THUMB_UP, RTU, RTM, RTD, NO_KEY, RT, RI1U, LRU
 

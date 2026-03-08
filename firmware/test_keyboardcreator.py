@@ -2,7 +2,8 @@ import unittest
 
 from adafruit_hid.keycode import Keycode as KC
 from kbdlayoutdata import VIRTUAL_KEY_ORDER, LAYERS, \
-    MODIFIERS, MACROS
+    MODIFIERS
+from macrosdata import MACROS
 from keyboardcreator import KeyboardCreator
 from keyboardhalf import VKeyPressEvent
 from keysdata import LPU, NO_KEY, LPM

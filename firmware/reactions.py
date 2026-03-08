@@ -38,6 +38,8 @@ class KeyCmd(ReactionCmd):
             return f'press({self.key_code})'
         elif self.kind == KeyCmdKind.KEY_RELEASE:
             return f'release({self.key_code})'
+        elif self.kind == KeyCmdKind.KEY_SEND:
+            return f'send({self.key_code})'
         else:
             return f'???({self.key_code})'
 

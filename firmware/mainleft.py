@@ -20,7 +20,8 @@ from adafruit_hid.mouse import Mouse
 
 from base import PhysicalKeySerial, TimeInMs, KeyCode
 from button import Button
-from kbdlayoutdata import LEFT_KEY_GROUPS, VIRTUAL_KEY_ORDER, LAYERS, MODIFIERS, MACROS
+from kbdlayoutdata import LEFT_KEY_GROUPS, VIRTUAL_KEY_ORDER, LAYERS, MODIFIERS
+from macrosdata import MACROS
 from keyboardhalf import KeyboardHalf, KeyGroup, VKeyPressEvent
 from keysdata import *
 from uart import LeftUart, MouseMove

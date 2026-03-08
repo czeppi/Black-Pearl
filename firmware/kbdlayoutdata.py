@@ -193,12 +193,3 @@ MODIFIERS = {
     RRU: 'LAlt',
     RPU: 'LGui',
 }
-
-MACROS = {
-    'M0': 'x x x',
-    'M1': 'x x x',
-    'M2': 'x x x',
-    'M3': 'x x x',
-    'M4': 'x x x',
-    'M5': 'x x x',
-}

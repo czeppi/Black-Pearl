@@ -170,11 +170,6 @@ class KeyboardCreator:
 
         simple_key_serials = all_vkey_serials - set(self._modifiers.keys()) - set(self._layers.keys())
 
-        self._macros = {
-            macro_name: self._create_macro(macro_desc)
-            for macro_name, macro_desc in self._macros.items()
-        }
-
         simple_keys = [self._create_simple_key(vkey_serial)
                        for vkey_serial in simple_key_serials]
         mod_keys = [self._create_mod_key(vkey_serial, mod_key_name)
@@ -234,9 +229,6 @@ class KeyboardCreator:
             if de_lower_char == 'q':
                 yield '@', _KeyReactionData(key_code=key_code, with_shift=False, with_alt=True, name='@')
 
-    def _create_macro(self, macro_desc: str) -> OneKeyReactions:
-        pass  # todo: implement
-
     @staticmethod
     def _create_simple_key(vkey_serial: VirtualKeySerial) -> SimpleKey:
         return SimpleKey(vkey_serial)
@@ -270,7 +262,8 @@ class KeyboardCreator:
             return None  # not set
 
         if reaction_name in self._macros:
-            return None  # todo: implement
+            macro_desc = self._macros[reaction_name]
+            return self._create_macro_reaction(macro_desc)
         elif reaction_name == 'MouseLeft':
             press_cmd = MouseButtonCmd(Mouse.LEFT_BUTTON, kind=MouseButtonCmdKind.MOUSE_PRESS)
             release_cmd = MouseButtonCmd(Mouse.LEFT_BUTTON, kind=MouseButtonCmdKind.MOUSE_RELEASE)
@@ -323,3 +316,34 @@ class KeyboardCreator:
         else:
             return OneKeyReactions(on_press_key_reaction_commands=[press_cmd],
                                    on_release_key_reaction_commands=[release_cmd])
+
+    def _create_macro_reaction(self, macro_desc: MacroDescription) -> OneKeyReactions:
+        commands = list(self._iter_macro_commands_from_desc(macro_desc))
+        return OneKeyReactions(on_press_key_reaction_commands=commands,
+                               on_release_key_reaction_commands=[])
+
+    def _iter_macro_commands_from_desc(self, macro_desc: MacroDescription) -> Iterator[KeyCmd]:
+        for ch in macro_desc:
+            yield from self._iter_macro_commands_from_char(ch)
+
+    def _iter_macro_commands_from_char(self, ch: str) -> Iterator[KeyCmd]:
+        assert ch in self._reaction_map
+        reaction_data: _KeyReactionData = self._reaction_map[ch]
+
+        key_code = reaction_data.key_code
+        press_cmd = KeyCmd(kind=KeyCmdKind.KEY_PRESS, key_code=key_code)
+        release_cmd = KeyCmd(kind=KeyCmdKind.KEY_RELEASE, key_code=key_code)
+
+        if reaction_data.with_shift:
+            yield KeyCmd(kind=KeyCmdKind.KEY_PRESS, key_code=KC.LEFT_SHIFT)
+            yield press_cmd
+            yield release_cmd
+            yield KeyCmd(kind=KeyCmdKind.KEY_RELEASE, key_code=KC.LEFT_SHIFT)
+        elif reaction_data.with_alt:
+            yield KeyCmd(kind=KeyCmdKind.KEY_PRESS, key_code=KC.RIGHT_ALT)
+            yield press_cmd
+            yield release_cmd
+            yield KeyCmd(kind=KeyCmdKind.KEY_RELEASE, key_code=KC.RIGHT_ALT)
+        else:
+            yield press_cmd
+            yield release_cmd

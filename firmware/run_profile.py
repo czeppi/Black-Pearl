@@ -4,7 +4,8 @@ from typing import Iterator
 
 from base import TimeInMs, PhysicalKeySerial
 from kbdlayoutdata import VIRTUAL_KEY_ORDER, LAYERS, \
-    MODIFIERS, MACROS, RIGHT_KEY_GROUPS
+    MODIFIERS, RIGHT_KEY_GROUPS
+from macrosdata import MACROS
 
 from keyboardcreator import KeyboardCreator
 from keyboardhalf import KeyGroup, KeyboardHalf
