@@ -14,12 +14,14 @@
 # Features
 
 - min. necessary finger movement
-- using QWERTY (in my case QWERTZ, cause I'm using a german layout)
+- using QWERTY/QWERTZ
 - max. ergonomic
 - only 22 keys
 - integrated trackball + roller encoder
 - hot-swapable
 - easy to adjust
+- slightly modified KLP key caps
+- own firmware (based on Adafruit Circuit Python)
 - diodeless
 - using Raspberry Pico
 - handwired
@@ -56,8 +58,6 @@ The main issue is the lack of a track ball, so I switch beetween keyboard and mo
 A 2nd disadvantage are the thumb-clusters, which are not very ergonomic.
 
 I'm print the case of a charibdis keyboard, but the distances between the keys are too far for me.
-
-
 
 # Related keyboards
 
