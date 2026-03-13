@@ -12,3 +12,4 @@ complete_finger_part
 /firmware/#*
 /case/.idea
 /.idea
+/firmware/macrosdata.py

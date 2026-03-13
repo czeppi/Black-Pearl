@@ -1,6 +1,6 @@
 # Black Pearl
 
-![](pics/cc22.jpg)
+![](pics/keyboard.jpg)
 
 **An extrem ergonomic keyboard with integrated trackball and roller encoder**
 
@@ -58,6 +58,18 @@ The main issue is the lack of a track ball, so I switch beetween keyboard and mo
 A 2nd disadvantage are the thumb-clusters, which are not very ergonomic.
 
 I'm print the case of a charibdis keyboard, but the distances between the keys are too far for me.
+
+# Some notes to the name
+
+The name relationship to the ship in "Pirates of the Caribbean" is no coincidence.
+Cause both has some attributes in common:
+- black (that's for sure)
+- fast (hopefully)
+- beautiful (OK, that's a matter of opinion)
+
+...and, every switch pair holder has some similarities to a historical ship
+
+![](pics/keyboard-ship.jpg)
 
 # Related keyboards
 
