@@ -51,6 +51,10 @@ With the terrific KLP keycaps it is much easier to press both keys blind.
 - lots of heat inserter sets
 - lots of cables (I'm using AWG 26 with solid core, but this is a matter of personal preference)
 
+# A look inside
+
+![](pics/keyboard-inside.jpg)
+
 # Why yet another keyboard?
 
 I'm using a piantor keyboard since over a year and I'm quite happy with it.
@@ -63,9 +67,9 @@ I'm print the case of a charibdis keyboard, but the distances between the keys a
 
 The name relationship to the ship in "Pirates of the Caribbean" is no coincidence.
 Cause both has some attributes in common:
-- black (that's for sure)
+- black (that much is certain - with the words of captain Sparrow)
+- extraordinary
 - fast (hopefully)
-- beautiful (OK, that's a matter of opinion)
 
 ...and, every switch pair holder has some similarities to a historical ship
 
@@ -84,8 +88,3 @@ Cause both has some attributes in common:
 - keycaps: CC-BY-SA
 - firmware: GPL V3
 
-# install venv
-
-- pip install build123d
-- pip install ocp_vscode
-- pip install shapely
