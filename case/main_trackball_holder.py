@@ -1,3 +1,6 @@
+""" Create the trackball holder
+"""
+
 import copy
 from typing import Iterator
 
@@ -8,14 +11,18 @@ from ocp_vscode import show
 from base import TOLERANCE, OUTPUT_DPATH
 from thumb_base import THICKNESS, SWITCH_HOLDER_BASE_SCREW_DIST, SWITCH_HOLDER_BASE_SCREW
 
-type XY = tuple[float, float]
 
-WRITE_ENABLED = True
+type XY = tuple[float, float]
 
 
 def main():
     creator = TrackballHolderCreator()
     holder = creator.create()
+
+    if not OUTPUT_DPATH.exists():
+        OUTPUT_DPATH.mkdir()
+    export_stl(holder, OUTPUT_DPATH / 'trackball-holder.stl')
+
     show(holder)
 
 
@@ -60,9 +67,6 @@ class TrackballHolderCreator:
         result -= self._create_sensor_hole_box()
         result -= self._create_sphere_bottom_hole()
         result -= self._create_sphere_cut()
-
-        if WRITE_ENABLED:
-            export_stl(result, OUTPUT_DPATH / 'trackball-holder.stl')
 
         return result
     

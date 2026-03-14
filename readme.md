@@ -6,10 +6,10 @@
 
 # Quick links
 
-- [build case](doc/build-case.md)
+- [build case](case/readme.md)
 - [wiring](doc/wiring.md)
-- [build key caps](doc/build-key-caps.md)
-- [firmware](doc/firmware.md)
+- [build key caps](caps/readme.md)
+- [firmware](firmware/readme.md)
 
 # Features
 
@@ -69,7 +69,7 @@ Cause both has some attributes in common:
 
 ...and, every switch pair holder has some similarities to a historical ship
 
-![](pics/keyboard-ship.jpg)
+![](pics/keyboard-ship50.jpg)
 
 # Related keyboards
 

@@ -3,20 +3,14 @@ from typing import Iterator
 
 from build123d import Box, Part, Pos, Rot, Sketch, Polyline, Plane, Solid, Location
 from build123d import export_stl, make_face
-from ocp_vscode import show
 
 from base import OUTPUT_DPATH, KeyboardSide
 from thumb_base import SWITCH_HOLDER_BASE_SCREW_DIST
 from finger_parts import SwitchPairHolderCreator, XY
 from hot_swap_socket import hot_swap_socket_data
 
-WRITE_ENABLED = True
 
-
-def main():
-    creator = ThumbSwitchHolderCreator(side=KeyboardSide.LEFT)
-    holder = creator.create()
-    show(holder)
+WRITE_ENABLED = True  # set this to False, if you only want to see the result
 
 
 class ThumbSwitchHolderCreator(SwitchPairHolderCreator):
@@ -42,6 +36,9 @@ class ThumbSwitchHolderCreator(SwitchPairHolderCreator):
         foot_part = self._create_foot() - neg_parts
 
         if WRITE_ENABLED:
+            if not OUTPUT_DPATH.exists():
+                OUTPUT_DPATH.mkdir()
+            
             export_stl(top_part, OUTPUT_DPATH / f'thumb-switch-holder-{side_name}-top.stl')
             export_stl(middle_part, OUTPUT_DPATH / f'thumb-switch-holder-{side_name}-middle.stl')
             export_stl(foot_part, OUTPUT_DPATH / f'thumb-switch-holder-{side_name}-foot.stl')
@@ -131,7 +128,3 @@ class ThumbSwitchHolderCreator(SwitchPairHolderCreator):
         z_len = 5
 
         return Pos(X=x_len/2 + dx, Z=z_len/2 - z_offset) * Box(x_len, y_len, z_len)
-
-
-if __name__ == '__main__':
-    main()

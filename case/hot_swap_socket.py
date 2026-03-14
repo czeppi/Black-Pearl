@@ -1,3 +1,12 @@
+""" Classes for creating hot swap sockets
+
+    links:
+    - https://www.kailhswitch.com/mechanical-keyboard-switches/box-switches/choc-type-hot-swap-socket.html  # official
+    - https://kbd.news/Hot-swap-socket-holders-1669.html  # unprecise
+    - https://github.com/daprice/keyswitches.pretty/blob/master/Kailh_socket_PG1350.kicad_mod  # for kicad
+    - https://github.com/kiswitch/kiswitch
+"""
+
 import copy
 import math
 from dataclasses import dataclass
@@ -5,18 +14,7 @@ from typing import Iterator
 
 from build123d import Part, Pos, Curve, Cylinder, Solid, Line, EllipticalCenterArc, AngularDirection, Edge, RadiusArc, \
     Kind, Box, Plane
-from build123d import export_stl, make_face, extrude, offset, mirror
-from ocp_vscode import show
-
-from base import OUTPUT_DPATH
-
-"""
-    links:
-    - https://www.kailhswitch.com/mechanical-keyboard-switches/box-switches/choc-type-hot-swap-socket.html  # official
-    - https://kbd.news/Hot-swap-socket-holders-1669.html  # unprecise
-    - https://github.com/daprice/keyswitches.pretty/blob/master/Kailh_socket_PG1350.kicad_mod  # for kicad
-    - https://github.com/kiswitch/kiswitch
-"""
+from build123d import make_face, extrude, offset, mirror
 
 
 class kailh_choc_v1_data:
@@ -82,16 +80,6 @@ class hot_swap_socket_data_old:
     STUD1_CY = 2.3  # exact: 2.301
     STUD2_CX = 7.7  # exact: 7.703
     STUD2_CY = 4.6  # exact: 4.603
-
-
-def main():
-    create_switch_socket()
-
-
-def create_switch_socket():
-    socket = SwitchSocketCreator().create()
-    export_stl(socket, OUTPUT_DPATH / 'hot-swap-socket.stl')
-    show(socket)
 
 
 class SwitchSocketCreator:

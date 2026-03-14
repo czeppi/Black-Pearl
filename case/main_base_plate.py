@@ -1,3 +1,6 @@
+""" Create base plate
+"""
+
 import math
 from typing import Iterator
 from ocp_vscode import show
@@ -113,6 +116,9 @@ class CircleBasePlateCreator:
         part.label = 'plate'
 
         if WRITE_ENABLED:
+            if not OUTPUT_DPATH.exists():
+                OUTPUT_DPATH.mkdir()
+
             export_stl(part, OUTPUT_DPATH / 'circle-base-plate.stl')
 
         return part
@@ -446,6 +452,9 @@ class CircleBasePlateCreator:
         part.label = 'cover'
 
         if WRITE_ENABLED:
+            if not OUTPUT_DPATH.exists():
+                OUTPUT_DPATH.mkdir()
+            
             export_stl(part, OUTPUT_DPATH / 'circle-base-cover.stl')
         
         return part
@@ -459,6 +468,9 @@ class CircleBasePlateCreator:
         box = Box(length, width, height)
 
         if WRITE_ENABLED:
+            if not OUTPUT_DPATH.exists():
+                OUTPUT_DPATH.mkdir()
+
             export_stl(box, OUTPUT_DPATH / 'trrs_stopper.stl')
 
         return box
@@ -474,6 +486,9 @@ class CircleBasePlateCreator:
         part = box - hole
 
         if WRITE_ENABLED:
+            if not OUTPUT_DPATH.exists():
+                OUTPUT_DPATH.mkdir()
+
             export_stl(part, OUTPUT_DPATH / 'controller-holder-plate.stl')
 
         return part

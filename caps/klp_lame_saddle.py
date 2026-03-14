@@ -18,77 +18,17 @@ class CapKind(Enum):
     INDEX_FINGER_BIG = 4  # new outside caps for index finger (double deep, and rotated stem)
 
 
-def main():
-    #part = create_single_cap(cap_kind=CapKind.ORIG, fname='lame-key-cap-orig.stl')
-    #part = create_single_cap(cap_kind=CapKind.INDEX_FINGER_STD, fname='lame-key-cap-index-normal.stl')
-    #part = create_single_cap(cap_kind=CapKind.INDEX_FINGER_CONCAVE, fname='lame-key-cap-index-concave.stl')
-    #part = create_single_cap(cap_kind=CapKind.INDEX_FINGER_BIG, fname='lame-key-cap-index-big.stl')
+def create_and_show_single_cap(cap_kind: CapKind, fname: str) -> None:
+    print(f'create_and_show_single_cap: {cap_kind}...')
+    key_cap = LameSaddleKeyCapCreator(cap_kind=cap_kind).create()
 
-    #part = create_index_trio()
-    #show_object(part)
-    create_grid_caps()
+    if not OUTPUT_DPATH.exists():
+        OUTPUT_DPATH.mkdir()
+    export_stl(key_cap, OUTPUT_DPATH / fname)
+    
+    show_object(key_cap)
 
     
-def create_single_cap(cap_kind: CapKind, fname: str) -> Solid:
-    print(f'create_single_cap: {cap_kind}...')
-    key_cap = LameSaddleKeyCapCreator(cap_kind=cap_kind).create()
-    export_stl(key_cap, OUTPUT_DPATH / fname)
-    return key_cap
-
-
-def create_grid_caps() -> None:
-    # _create_grid_caps(columns_data=['ob', 'bci'], fname='lame-key-caps-grid-test.stl')
-
-    order_data = [
-        ['bcc', 'bcc', 'bcc'],  # 1x
-        ['ooo', 'ooo', 'ooo'],  # 2x
-        ['iii', 'iii', 'iii'],  # 1x
-        ['bcc', 'oooo', 'oooo'],  # metal
-    ]
-
-    for i, columns_data in enumerate(order_data):
-        print(f'create grid {i}')
-        _create_grid_caps(columns_data=columns_data, fname=f'lame-key-caps-grid{i}.stl')
-
-
-def _create_grid_caps(columns_data: list[str], fname: str):
-    cap_kind_map = {
-        'o': CapKind.ORIG,                  # needed: 16 + 2 reserve => 18
-        'i': CapKind.INDEX_FINGER_STD,      # needed:  8 + 1 reserve =>  9
-        'c': CapKind.INDEX_FINGER_CONCAVE,  # needed:  4 + 1 reserve =>  5
-        'b': CapKind.INDEX_FINGER_BIG,      # needed:  2 + 1 reserve =>  3
-        }
-    cap_kinds = [[cap_kind_map[ch] for ch in col_str] 
-                 for col_str in columns_data]
-    caps = LameKeyCapGridCreator(cap_kinds=cap_kinds).create()
-    export_stl(caps, OUTPUT_DPATH / fname)
-    return caps
-
-
-def create_index_trio() -> Part:
-    concave_cap = LameSaddleKeyCapCreator(cap_kind=CapKind.INDEX_FINGER_CONCAVE).create()
-    big_cap = Rot(Z=180) * LameSaddleKeyCapCreator(cap_kind=CapKind.INDEX_FINGER_BIG).create()
-
-    concave_box = concave_cap.bounding_box()
-    big_box = big_cap.bounding_box()
-
-    pair_holder_back_border = 3.2  # s. keys_holder.BACK_BORDER
-    cut_width = 13.9  # s. finger_parts.CUT_WIDTH
-    cap_height = 4.8  # the height of the cap-bottom
-
-    x = -concave_box.min.X
-    y = cut_width/2 + pair_holder_back_border
-    z = cap_height - 1.3
-    cap1 = Rot(X=15) * Pos(X=x, Y=y, Z=z) * concave_cap
-    cap2 = mirror(cap1, about=Plane.XZ)
- 
-    x = big_box.min.X
-    z = cap_height - 1.3 + 6
-    cap3 = Pos(X=x, Z=z) * Rot(Y=25) * big_cap
-
-    return cap1 + cap2 + cap3
-
-
 class LameKeyCapGridCreator:
 
     def __init__(self, cap_kinds: list[list[CapKind]]):
@@ -429,5 +369,5 @@ class CapSideHelper:
             raise Exception('y value not found')    
 
 
-if __name__ == '__main__':
-    main()
+#if __name__ == '__main__':
+#    main()

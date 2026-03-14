@@ -9,16 +9,7 @@ from base import OUTPUT_DPATH, mm, Degree
 import data
 
 
-
-WRITE_ENABLED = True
-
-
-def main():
-    part = FingerDoubleBallJoinCreator().create()
-    #part = ThumbDoubleBallJoinCreator().create()
-    #part = ThumbHolderWingCreator().create()
-    #part = FingerHolderWingCreator().create()
-    show(part)
+WRITE_ENABLED = True  # set this to False for only view the result
 
 
 class DoubleBallJoinCreator:
@@ -50,6 +41,9 @@ class DoubleBallJoinCreator:
         holder_half2.label = 'half2'
 
         if WRITE_ENABLED:
+            if not OUTPUT_DPATH.exists():
+                OUTPUT_DPATH.mkdir()
+
             export_stl(holder_half1, OUTPUT_DPATH / f'{self._name_prefix}-double-ball-holder1.stl')
             export_stl(holder_half2, OUTPUT_DPATH / f'{self._name_prefix}-double-ball-holder2.stl')
 
@@ -388,7 +382,3 @@ class ThumbHolderWingCreator(HolderWingCreator):
                             heat_set_length=self.HEAT_SET_LENGTH,
                             screw_hole_length=self.SCREW_HOLE_LENGTH,
                             hole_cylinder_thickness=self.HOLE_CYLINDER_THICKNESS)
-
-
-if __name__ == '__main__':
-    main()

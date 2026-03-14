@@ -16,7 +16,7 @@ from ocp_vscode import show
 
 type XY = tuple[float, float]
 
-WRITE_ENABLED = True
+WRITE_ENABLED = True  # set this to False, if you only want to see the results
 
 
 @dataclass
@@ -32,17 +32,6 @@ class SwitchHolderCorrection:
     #middle: PosCorrection
     #ring: PosCorrection
     #pinkie: PosCorrection
-
-
-def main():
-    creator = CaseAssemblyCreator()
-    case_assembly = creator.create()
-    show(case_assembly)
-
-
-def create_switch_pair_holder():
-    holder = SwitchPairHolderCreator().create()
-    show(holder)
 
 
 class CaseAssemblyCreator:
@@ -179,6 +168,9 @@ class SingleSwitchHolderCreator(SwitchHolderCreatorBase):  # for index finger
         foot_part = self._create_foot()
 
         if WRITE_ENABLED:
+            if not OUTPUT_DPATH.exists():
+                OUTPUT_DPATH.mkdir()
+
             export_stl(top_part2, OUTPUT_DPATH / 'single-switch-top.stl')
             export_stl(middle_part2, OUTPUT_DPATH / 'single-switch-middle.stl')
             export_stl(foot_part, OUTPUT_DPATH / 'single-switch-foot.stl')
@@ -355,6 +347,9 @@ class SwitchPairHolderCreator(SwitchHolderCreatorBase):
         foot_part = self._create_foot()
 
         if WRITE_ENABLED:
+            if not OUTPUT_DPATH.exists():
+                OUTPUT_DPATH.mkdir()
+
             export_stl(top_part, OUTPUT_DPATH / 'switch-pair-top.stl')
             export_stl(middle_part, OUTPUT_DPATH / 'switch-pair-middle.stl')
             export_stl(foot_part, OUTPUT_DPATH / 'switch-pair-foot.stl')
@@ -573,6 +568,9 @@ class SkeletonCreator:
         skeleton_with_sphere.label = 'skeleton'
 
         if WRITE_ENABLED:
+            if not OUTPUT_DPATH.exists():
+                OUTPUT_DPATH.mkdir()
+
             export_stl(skeleton_with_sphere, OUTPUT_DPATH / 'skeleton-with-sphere.stl')
 
         return skeleton_with_sphere
@@ -691,7 +689,3 @@ class SkeletonCreator:
     #             t1 = t
     #     else: 
     #         raise Exception('t not found in spline')
-
-
-if __name__ == '__main__':
-    main()

@@ -113,4 +113,3 @@ class SwitchPairHolderFingerLocations:
     @property
     def pinkie(self) -> Location:
         return self._index_to_middle * self._middle_to_ring * self._ring_to_pinkie * self._pinkie_rotate_correction
-

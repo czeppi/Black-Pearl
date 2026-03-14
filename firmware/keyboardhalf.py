@@ -194,4 +194,3 @@ class KeyGroup:
         """
         yield from self._update_with_release(time, cur_pressed_pkeys)
         yield from self._update_with_press(time, cur_pressed_pkeys)
-

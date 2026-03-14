@@ -1,3 +1,6 @@
+""" Create the encoder holder for the left thumb
+"""
+
 import copy
 from typing import Iterator
 
@@ -9,9 +12,11 @@ import data
 from base import TOLERANCE, OUTPUT_DPATH
 from thumb_base import THICKNESS, SWITCH_HOLDER_BASE_SCREW_DIST, SWITCH_HOLDER_BASE_SCREW
 
+
 type XY = tuple[float, float]
 
-WRITE_ENABLED = True
+
+WRITE_ENABLED = True  # set this to False, if you only want to show the result
 
 
 def main():
@@ -47,6 +52,9 @@ class EncoderHolderCreator:
         result -= list(self._create_encoder_neg_part())
 
         if WRITE_ENABLED:
+            if not OUTPUT_DPATH.exists():
+                OUTPUT_DPATH.mkdir()
+
             export_stl(result, OUTPUT_DPATH / 'encoder-holder.stl')
 
         return result
