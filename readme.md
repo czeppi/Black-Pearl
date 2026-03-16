@@ -7,7 +7,6 @@
 # Quick links
 
 - [build case](case/readme.md)
-- [wiring](doc/wiring.md)
 - [build key caps](caps/readme.md)
 - [firmware](firmware/readme.md)
 

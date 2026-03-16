@@ -1,7 +1,16 @@
 
-# Install
+# Firmware
 
-## download circuitpython
+## Why an own firmware
+
+It is very difficult to simulate a 3rd row with the existing keyboard firmwares like QMK or KMK.
+Since I am a professional software developer, I decided to write my own. 
+I thought that this should be a small piece of work, cause only a subset of the typically firmware is needed (no matrix for example) - that was an error!
+All in all it take over three weeks of work.
+
+## Install
+
+### download circuitpython
 
 you can use a pico or a pico2
 
@@ -11,22 +20,22 @@ pico: https://circuitpython.org/board/raspberry_pi_pico_w/
 pico2: https://circuitpython.org/board/raspberry_pi_pico2_w/ 
 => adafruit-circuitpython-raspberry_pi_pico2_w-en_US-9.2.9.uf2
 
-## install circuitpython
+### install circuitpython
 
 - connect Pico to USB while Sel-button is pressed => new drive appears
 - drag&drop utf2 file to that drive => a new drive appears
 
-## download library bundle
+### download library bundle
 
 https://circuitpython.org/libraries => adafruit-circuitpython-bundle-9.x-mpy-20250911.zip
 
-## install library bundle
+### install library bundle
 
 - copy folders adafruit_bus_device + adafruit_hid
 - from adafruit-circuitpython-bundle-9.x-mpy-20250911.zip/adafruit-circuitpython-bundle-9.x-mpy-20250911/lib
 - to   [CIRCUIT-Python-drive]:/lib
 
-## copy files to left half (connected with computer)
+### copy files to left half (connected with computer)
 
 copy this files from this directory to [CIRCUIT-Python-drive]:/
 
@@ -42,7 +51,7 @@ copy this files from this directory to [CIRCUIT-Python-drive]:/
 - uart.py
 - virtualkeyboard.py
 
-## copy files to right half (only connected with left half)
+### copy files to right half (only connected with left half)
 
 copy this files from this directory to [CIRCUIT-Python-drive]:/
 
@@ -55,9 +64,9 @@ copy this files from this directory to [CIRCUIT-Python-drive]:/
 - pmw3389
 - uart.py
 
-# Connection info of the PMW3389
+## Connection info of the PMW3389
 
-## Pins of the PMW3389
+### Pins of the PMW3389
 
 | board |    | color  | description                        |
 |-------|----|--------|------------------------------------|
@@ -70,7 +79,7 @@ copy this files from this directory to [CIRCUIT-Python-drive]:/
 | MISO  | MI | purple |                                    |
 | VIN   | VI | gray   | Voltage in up to +5.5V             |
 
-## Connection to the Pico
+### Connection to the Pico
 
 |           |       |            |
 |-----------|-------|------------|
