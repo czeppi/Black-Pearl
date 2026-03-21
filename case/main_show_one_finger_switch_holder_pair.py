@@ -3,7 +3,7 @@
 If you only want to see one pair holder, than this is faster than main_show_all_finger_parts.py
 """
 
-from ocp_vscode import show
+from ocp_vscode import set_port, show_object
 from finger_parts import SwitchPairHolderCreator
 
 
@@ -13,7 +13,7 @@ def main():
 
 def create_switch_pair_holder():
     holder = SwitchPairHolderCreator().create()
-    show(holder)
+    show_object(holder)
 
 
 if __name__ == '__main__':

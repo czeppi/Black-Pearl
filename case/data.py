@@ -21,7 +21,6 @@ FLAT_HEAD_SCREW_M2 = FlatHeadScrew(
     head_set_insert_radius = 1.5
 )
 
-
 FLAT_HEAD_SCREW_M2_5 = FlatHeadScrew(
     head_radius = 2.25,  # measured 2.13
     head_height = 1.0,  # measured: 0.87

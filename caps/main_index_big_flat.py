@@ -6,4 +6,4 @@ If the index finger should use three switches, than one cap should be bigger.
 from klp_lame_saddle import CapKind, create_and_show_single_cap
 
 
-create_and_show_single_cap(cap_kind=CapKind.INDEX_FINGER_BIG, fname='lame-key-cap-index-big.stl')
+create_and_show_single_cap(cap_kind=CapKind.INDEX_FINGER_BIG_FLAT, fname='lame-key-cap-index-big-flat.stl')
