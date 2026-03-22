@@ -51,14 +51,21 @@ class CaseAssemblyCreator:
         # y2 = 11.36  # SwitchPairHolderCreator._create_middle_profile_face()#y2
         # holder = Box(14, 2 * y2, 5)
 
-        pair_holder_parts = SwitchPairHolderCreator().create()
+        ring_corr_dx = -2.0
+        pinky_corr_dx = -5.0
+
+        index_finger_holder_parts = SwitchPairHolderCreator().create('index+middle')
+        middle_finger_holder_parts = copy.copy(index_finger_holder_parts)
+        ring_finger_parts = SwitchPairHolderCreator().create('ring', corr_dx=ring_corr_dx)
+        pinky_parts = SwitchPairHolderCreator().create('pinky', corr_dx=pinky_corr_dx)
+
         index2_compound = SingleSwitchHolderCreator().create()
 
         yield loc.index * index2_compound
-        yield loc.index * Compound(label='index', children=copy.copy(pair_holder_parts))
-        yield loc.middle * Compound(label='middle', children=copy.copy(pair_holder_parts))
-        yield loc.ring * Compound(label='ring', children=copy.copy(pair_holder_parts))
-        yield loc.pinkie * Compound(label='pinkie', children=copy.copy(pair_holder_parts))
+        yield loc.index * Compound(label='index', children=index_finger_holder_parts)
+        yield loc.middle * Compound(label='middle', children=middle_finger_holder_parts)
+        yield loc.ring * Compound(label='ring', children=ring_finger_parts)
+        yield loc.pinkie * Compound(label='pinkie', children=pinky_parts)
 
     def save(self, output_path: Path) -> None:
         raise NotImplementedError()
@@ -341,18 +348,20 @@ class SwitchPairHolderCreator(SwitchHolderCreatorBase):
         yield 0, dy
         yield 0, -dy
 
-    def create(self) -> list[Solid]:
-        top_part = self._create_top()
-        middle_part = self._create_middle_part()
-        foot_part = self._create_foot()
+    def create(self, finger_name: str, corr_dx: float = 0.0) -> list[Solid]:
+        """ corr_dx: correction in x direction
+        """
+        top_part = Pos(X=corr_dx) * self._create_top()
+        middle_part = Pos(X=corr_dx) * self._create_middle_part()
+        foot_part = self._create_foot(corr_dx=corr_dx)
 
         if WRITE_ENABLED:
             if not OUTPUT_DPATH.exists():
                 OUTPUT_DPATH.mkdir()
 
-            export_stl(top_part, OUTPUT_DPATH / 'switch-pair-top.stl')
-            export_stl(middle_part, OUTPUT_DPATH / 'switch-pair-middle.stl')
-            export_stl(foot_part, OUTPUT_DPATH / 'switch-pair-foot.stl')
+            export_stl(top_part, OUTPUT_DPATH / f'{finger_name}-top.stl')
+            export_stl(middle_part, OUTPUT_DPATH / f'{finger_name}-middle.stl')
+            export_stl(foot_part, OUTPUT_DPATH / f'{finger_name}-foot.stl')
 
         return [top_part, middle_part, foot_part]
 
@@ -512,21 +521,24 @@ class SwitchPairHolderCreator(SwitchHolderCreatorBase):
             hole = self._create_hole(screw=screw)
             yield Plane.XY * pos * hole
 
-    def _create_foot(self) -> Solid:
+    def _create_foot(self, corr_dx: float) -> Solid:
         x_len = 2 * self.HOLDER_LEFT_RIGHT_BORDER + self._square_hole_len
+        x_extra = abs(corr_dx)
+        x_offset = corr_dx / 2
+                      
         z_offset = self.FOOT_HEIGHT / 2 + self.MIDDLE_PART_HEIGHT_AT_CENTER
-        foot_part = Pos(Z=-z_offset) * Box(x_len, self.FOOT_Y_LEN, self.FOOT_HEIGHT)
+        foot_part = Pos(X=x_offset, Z=-z_offset) * Box(x_len + x_extra, self.FOOT_Y_LEN, self.FOOT_HEIGHT)
 
         counter_bore_holes = list(self._iter_foot_counter_bore_holes())
-        heat_set_insert_holes = list(self._iter_foot_heat_set_insert_holes())
+        heat_set_insert_holes = list(self._iter_foot_heat_set_insert_holes(corr_dx=corr_dx))
         foot_part -= counter_bore_holes + heat_set_insert_holes
 
         foot_part.label = 'foot'
         return foot_part
 
-    def _iter_foot_heat_set_insert_holes(self) -> Iterator[Solid]:
+    def _iter_foot_heat_set_insert_holes(self, corr_dx: float) -> Iterator[Solid]:
         for x, y in self._iter_top_foot_conn_points():
-            pos = Pos(X=x, Y=y, Z=-self.MIDDLE_PART_HEIGHT_AT_CENTER)
+            pos = Pos(X=x + corr_dx, Y=y, Z=-self.MIDDLE_PART_HEIGHT_AT_CENTER)
             hole = self.create_heat_set_insert_hole(screw=data.FLAT_HEAD_SCREW_M2_5)
             yield Plane.XY * pos * hole
 
