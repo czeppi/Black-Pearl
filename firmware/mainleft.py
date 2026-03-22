@@ -136,6 +136,7 @@ class LeftKeyboardSide:
         encoder_offset = self._roller_encoder.update()
         if encoder_offset != 0:
             print(f'encoder_offset={encoder_offset}')
+            self._mouse_device.move(wheel=encoder_offset)
 
         mouse_dx = mouse_dy = 0
         other_vkey_events: list[VKeyPressEvent] = []
