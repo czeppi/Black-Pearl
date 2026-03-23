@@ -274,6 +274,24 @@ class KeyboardCreator:
             release_cmd = MouseButtonCmd(Mouse.RIGHT_BUTTON, kind=MouseButtonCmdKind.MOUSE_RELEASE)
             return OneKeyReactions(on_press_key_reaction_commands=[press_cmd],
                                    on_release_key_reaction_commands=[release_cmd])
+        elif reaction_name == 'MouseShiftLeft':
+            mouse_press_cmd = MouseButtonCmd(Mouse.LEFT_BUTTON, kind=MouseButtonCmdKind.MOUSE_PRESS)
+            mouse_release_cmd = MouseButtonCmd(Mouse.LEFT_BUTTON, kind=MouseButtonCmdKind.MOUSE_RELEASE)
+
+            shift_press_cmd = KeyCmd(kind=KeyCmdKind.KEY_PRESS, key_code=KC.LEFT_SHIFT)
+            shift_release_cmd = KeyCmd(kind=KeyCmdKind.KEY_RELEASE, key_code=KC.LEFT_SHIFT)
+
+            return OneKeyReactions(on_press_key_reaction_commands=[shift_press_cmd, mouse_press_cmd],
+                                   on_release_key_reaction_commands=[mouse_release_cmd, shift_release_cmd])
+        elif reaction_name == 'MouseCtrlLeft':
+            mouse_press_cmd = MouseButtonCmd(Mouse.LEFT_BUTTON, kind=MouseButtonCmdKind.MOUSE_PRESS)
+            mouse_release_cmd = MouseButtonCmd(Mouse.LEFT_BUTTON, kind=MouseButtonCmdKind.MOUSE_RELEASE)
+
+            ctrl_press_cmd = KeyCmd(kind=KeyCmdKind.KEY_PRESS, key_code=KC.LEFT_CONTROL)
+            ctrl_release_cmd = KeyCmd(kind=KeyCmdKind.KEY_RELEASE, key_code=KC.LEFT_CONTROL)
+
+            return OneKeyReactions(on_press_key_reaction_commands=[ctrl_press_cmd, mouse_press_cmd],
+                                   on_release_key_reaction_commands=[mouse_release_cmd, ctrl_release_cmd])
         elif reaction_name == 'MouseWheelUp':
             mouse_cmd = MouseWheelCmd(offset=1)
             return OneKeyReactions(on_press_key_reaction_commands=[mouse_cmd],

@@ -152,9 +152,9 @@ LAYERS = {
         'y x c v b Space   Space     n m , . -',
     ],
     LTD: [
-        'Esc MouseRight · MouseLeft · ·  · @  " { } `',
-        '·   ·          · ·         · ·  · \\ / ( ) $',
-        "Log MouseRight · MouseLeft · ·  · #  ' [ ] ´",
+        'Esc MouseRight ·             MouseLeft ·              ·  · @  " { } `',
+        '·   ·          ·             ·         MouseShiftLeft ·  · \\ / ( ) $',
+        "Log MouseRight MouseCtrlLeft MouseLeft ·              ·  · #  ' [ ] ´",
     ],
     LTM: [
         '· · · · · ·   · + 7 8 9 ü',
