@@ -21,7 +21,7 @@ from adafruit_hid.mouse import Mouse
 from base import PhysicalKeySerial, TimeInMs, KeyCode
 from button import Button
 from kbdlayoutdata import LEFT_KEY_GROUPS, VIRTUAL_KEY_ORDER, LAYERS, MODIFIERS
-from macrosdata import MACROS
+from macroslib import read_macros
 from keyboardhalf import KeyboardHalf, KeyGroup, VKeyPressEvent
 from keysdata import *
 from uart import LeftUart, MouseMove
@@ -91,10 +91,12 @@ class LeftKeyboardSide:
         self._buttons = [Button(pkey_serial=pkey_serial, gp_pin=gp_pin) for pkey_serial, gp_pin in self._BUTTON_MAP.items()]
         self._kbd_half = KeyboardHalf(key_groups=[KeyGroup(group_serial, group_data)
                                                   for group_serial, group_data in LEFT_KEY_GROUPS.items()])
+        macros = read_macros()
+
         creator = KeyboardCreator(virtual_key_order=VIRTUAL_KEY_ORDER,
                                   layers=LAYERS,
                                   modifiers=MODIFIERS,
-                                  macros=MACROS,
+                                  macros=macros,
                                   )
         self._virt_keyboard = creator.create()
         self._reaction_map = creator.create_reaction_map()

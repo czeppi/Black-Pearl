@@ -3,11 +3,20 @@ import unittest
 from adafruit_hid.keycode import Keycode as KC
 from kbdlayoutdata import VIRTUAL_KEY_ORDER, LAYERS, \
     MODIFIERS
-from macrosdata import MACROS
 from keyboardcreator import KeyboardCreator
 from keyboardhalf import VKeyPressEvent
 from keysdata import LPU, NO_KEY, LPM
 from reactions import KeyCmdKind, KeyCmd
+
+
+MACROS = {
+    'M0': 'xx',
+    'M1': 'xx',
+    'M2': 'xx',
+    'M3': 'xx',
+    'M4': 'xx',
+    'M5': 'xx',
+}
 
 
 class KeyboardCreatorTest(unittest.TestCase):

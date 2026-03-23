@@ -8,7 +8,6 @@ from keyboardhalf import VKeyPressEvent, KeyGroup, \
 from virtualkeyboard import SimpleKey, TapHoldKey, ModKey, \
     VirtualKeyboard, Layer
 from kbdlayoutdata import VIRTUAL_KEY_ORDER, LAYERS, MODIFIERS
-from macrosdata import MACROS
 from reactions import KeyCmdKind, KeyCmd, ReactionCommands, OneKeyReactions
 from keysdata import RIGHT_THUMB_DOWN, RIGHT_THUMB_UP, RTU, RTM, RTD, NO_KEY, RT, RI1U, LRU
 
@@ -18,6 +17,16 @@ B_DOWN = KeyCmd(kind=KeyCmdKind.KEY_PRESS, key_code=KC.B)
 B_UP = KeyCmd(kind=KeyCmdKind.KEY_RELEASE, key_code=KC.B)
 SHIFT_DOWN = KeyCmd(kind=KeyCmdKind.KEY_PRESS, key_code=KC.LEFT_SHIFT)
 SHIFT_UP = KeyCmd(kind=KeyCmdKind.KEY_RELEASE, key_code=KC.LEFT_SHIFT)
+
+
+MACROS = {
+    'M0': 'xx',
+    'M1': 'xx',
+    'M2': 'xx',
+    'M3': 'xx',
+    'M4': 'xx',
+    'M5': 'xx',
+}
 
 
 class TapKeyTest(unittest.TestCase):

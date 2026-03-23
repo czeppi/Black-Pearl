@@ -5,7 +5,6 @@ from typing import Iterator
 from base import TimeInMs, PhysicalKeySerial
 from kbdlayoutdata import VIRTUAL_KEY_ORDER, LAYERS, \
     MODIFIERS, RIGHT_KEY_GROUPS
-from macrosdata import MACROS
 
 from keyboardcreator import KeyboardCreator
 from keyboardhalf import KeyGroup, KeyboardHalf
@@ -15,6 +14,16 @@ from keysdata import LEFT_INDEX_DOWN
 
 keyboard: VirtualKeyboard | None = None
 kbd_half: KeyboardHalf | None = None
+
+
+MACROS = {
+    'M0': 'xx',
+    'M1': 'xx',
+    'M2': 'xx',
+    'M3': 'xx',
+    'M4': 'xx',
+    'M5': 'xx',
+}
 
 
 def main():
