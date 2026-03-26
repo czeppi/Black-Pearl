@@ -152,9 +152,9 @@ LAYERS = {
         'y x c v b Space   Space     n m , . -',
     ],
     LTD: [
-        'Esc MouseRight ·             MouseLeft ·              ·  · @  " { } `',
-        '·   ·          ·             ·         MouseShiftLeft ·  · \\ / ( ) $',
-        "Log MouseRight MouseCtrlLeft MouseLeft ·              ·  · #  ' [ ] ´",
+        'Esc · · · · ·  · @  " { } `',
+        '·   · · · · ·  · \\ / ( ) $',
+        "Log · · · · ·  · #  ' [ ] ´",
     ],
     LTM: [
         '· · · · · ·   · + 7 8 9 ü',
@@ -162,9 +162,9 @@ LAYERS = {
         '· · · · · ·   0 · 1 2 3 ß',
     ],
     LTU: [
-        '· · · · · ·   · · · · · ü',
-        '· · · · · ·   · · · · · ä',
-        '· · · · · ·   · · · · · ß',
+        '· MouseRight · MouseLeft      MouseCtrlLeft ·   · · · · · ü',
+        '· ·          · ·              ·             ·   · · · · · ä',
+        '· ·          · MouseShiftLeft ·             ·   · · · · · ß',
     ],
     RTM: [
         '· · · · · ·   · · F1 F2  F3  F4',
@@ -183,6 +183,7 @@ LAYERS = {
     ],
 }
 
+
 MODIFIERS = {
     LI1U: 'LShift',
     LMU: 'LCtrl',
@@ -192,4 +193,9 @@ MODIFIERS = {
     RMU: 'LCtrl',
     RRU: 'LAlt',
     RPU: 'LGui',
+}
+
+
+LAYERS_WITHOUT_MODIFIERS = {
+    LTU,
 }

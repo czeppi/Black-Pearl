@@ -4,7 +4,7 @@ from virtualkeyboard import SimpleKey, ModKey, LayerKey, VirtualKeyboard
 from reactions import KeyCmdKind, KeyCmd, OneKeyReactions, MouseButtonCmd, MouseWheelCmd, MouseButtonCmdKind, LogCmd
 
 try:
-    from typing import Callable, Iterator
+    from typing import Callable, Iterator, Optional
 except ImportError:
     pass
 
@@ -152,12 +152,14 @@ class KeyboardCreator:
     def __init__(self, virtual_key_order: list[list[VirtualKeySerial]],
                  layers: dict[VirtualKeySerial, list[ReactionName]],
                  modifiers: dict[VirtualKeySerial, ModKeyName],
-                 macros: dict[MacroName, MacroDescription]
+                 macros: dict[MacroName, MacroDescription],
+                 layer_keys_without_modifiers: Optional[set[VirtualKeySerial]] = None
                  ):
         self._virtual_key_order = virtual_key_order
         self._layers = layers
         self._modifiers = modifiers
         self._macros = macros
+        self._layer_keys_without_modifiers = layer_keys_without_modifiers if layer_keys_without_modifiers else set()
 
         self._reaction_map: dict[ReactionName, _KeyReactionData] = {}
 
@@ -174,7 +176,8 @@ class KeyboardCreator:
                        for vkey_serial in simple_key_serials]
         mod_keys = [self._create_mod_key(vkey_serial, mod_key_name)
                     for vkey_serial, mod_key_name in self._modifiers.items()]
-        layer_keys = [self._create_layer_key(vkey_serial, lines)
+        layer_keys = [self._create_layer_key(vkey_serial, lines,
+                                             with_modifiers=vkey_serial not in self._layer_keys_without_modifiers)
                       for vkey_serial, lines in self._layers.items() if vkey_serial != NO_KEY]
 
         return VirtualKeyboard(
@@ -238,10 +241,11 @@ class KeyboardCreator:
 
         return ModKey(vkey_serial, mod_key_code=mod_key_code)
 
-    def _create_layer_key(self, vkey_serial: VirtualKeySerial, lines: list[str]) -> LayerKey:
+    def _create_layer_key(self, vkey_serial: VirtualKeySerial, lines: list[str],
+                          with_modifiers: bool) -> LayerKey:
         layer = dict(self._create_layer(lines))
 
-        return LayerKey(vkey_serial, layer=layer)
+        return LayerKey(vkey_serial, layer=layer, with_modifiers=with_modifiers)
 
     def _create_layer(self, lines: list[str]) -> Iterator[tuple[VirtualKeySerial, OneKeyReactions]]:
         assert len(lines) == len(self._virtual_key_order)

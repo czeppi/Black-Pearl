@@ -47,24 +47,24 @@ class ModKey(TapHoldKey):
 
 class LayerKey(TapHoldKey):
 
-    def __init__(self, serial: VirtualKeySerial, layer: Layer):
+    def __init__(self, serial: VirtualKeySerial, layer: Layer,
+                 with_modifiers: bool=True):
         super().__init__(serial=serial)
 
         # public
         self.layer = layer
+        self.with_modifiers = with_modifiers
 
 
 class VirtualKeyboard:
 
     def __init__(self, simple_keys: list[SimpleKey], mod_keys: list[ModKey], layer_keys: list[LayerKey],
                  default_layer: Layer):
-        self._simple_keys = simple_keys
-        self._mod_keys = mod_keys
-        self._layer_keys = layer_keys
         self._all_keys = {key.serial: key for key in simple_keys + mod_keys + layer_keys}
         self._default_layer = default_layer
 
         self._cur_layer = default_layer
+        self._modifiers_enabled = True
         self._undecided_tap_hold_keys: list[TapHoldKey] = []
         self._deferred_simple_keys: list[SimpleKey] = []  # wait for Tap/Hold decision
         self._next_decision_time: TimeInMs | None = None
@@ -122,19 +122,28 @@ class VirtualKeyboard:
         vkey_serial = vkey_event.vkey_serial
         vkey = self._all_keys[vkey_serial]
 
-        if isinstance(vkey, TapHoldKey):
+        if self._is_tap_hold_key(vkey):
             if vkey_event.pressed:
                 self._on_begin_press_tap_hold_key(vkey)
                 vkey.last_press_time = time
             else:
                 yield from self._on_end_press_tap_hold_key(vkey)
 
-        elif isinstance(vkey, SimpleKey):
+        else:
             if vkey_event.pressed:
                 yield from self._on_begin_press_simple_key(vkey)
                 vkey.last_press_time = time
             else:
                 yield from self._on_end_press_simple_key(vkey)
+
+    def _is_tap_hold_key(self, vkey: VirtualKey) -> bool:
+        if isinstance(vkey, SimpleKey):
+            return False
+        elif isinstance(vkey, LayerKey):
+            return True
+        else:
+            assert isinstance(vkey, ModKey)
+            return self._modifiers_enabled
 
     def _on_begin_press_tap_hold_key(self, tap_hold_key: TapHoldKey) -> None:
         """
@@ -173,19 +182,20 @@ class VirtualKeyboard:
             self._undecided_tap_hold_keys.remove(tap_hold_key)
 
             # simple: deferred -> press
-            simple_keys_to_remove: list[SimpleKey] = []
-            oldest_tap_hold_key_press_time = min(tap_hold_key_press_times)
+            if len(tap_hold_key_press_times) > 0:
+                simple_keys_to_remove: list[SimpleKey] = []
+                oldest_tap_hold_key_press_time = min(tap_hold_key_press_times)
 
-            for simple_key in self._deferred_simple_keys:
-                if simple_key.last_press_time > oldest_tap_hold_key_press_time:
-                    # simple: -> press
-                    one_key_reactions = self._cur_layer.get(simple_key.serial)  # for simplifying, take current layer
-                    if one_key_reactions:
-                        yield from one_key_reactions.on_press_key_reaction_commands
-                    simple_keys_to_remove.append(simple_key)
+                for simple_key in self._deferred_simple_keys:
+                    if simple_key.last_press_time > oldest_tap_hold_key_press_time:
+                        # simple: -> press
+                        one_key_reactions = self._cur_layer.get(simple_key.serial)  # for simplifying, take current layer
+                        if one_key_reactions:
+                            yield from one_key_reactions.on_press_key_reaction_commands
+                        simple_keys_to_remove.append(simple_key)
 
-            for simple_key in simple_keys_to_remove:
-                self._deferred_simple_keys.remove(simple_key)
+                for simple_key in simple_keys_to_remove:
+                    self._deferred_simple_keys.remove(simple_key)
 
         else:  # was hold
             # tap/hold: hold -> inactive
@@ -261,6 +271,7 @@ class VirtualKeyboard:
         if isinstance(tap_hold_key, LayerKey):
             layer_key = tap_hold_key
             self._cur_layer = layer_key.layer
+            self._modifiers_enabled = layer_key.with_modifiers
         elif isinstance(tap_hold_key, ModKey):
             mod_key = tap_hold_key
             yield KeyCmd(kind=KeyCmdKind.KEY_PRESS, key_code=mod_key.mod_key_code)
@@ -268,6 +279,7 @@ class VirtualKeyboard:
     def _on_end_holding_reaction(self, tap_hold_key: TapHoldKey) -> Iterator[ReactionCmd]:
         if isinstance(tap_hold_key, LayerKey):
             self._cur_layer = self._default_layer
+            self._modifiers_enabled = True
         elif isinstance(tap_hold_key, ModKey):
             mod_key = tap_hold_key
             yield KeyCmd(kind=KeyCmdKind.KEY_RELEASE, key_code=mod_key.mod_key_code)
