@@ -281,11 +281,11 @@ class FingerDoubleBallJoinCreator(DoubleBallJoinCreator):
     NAME_PREFIX = 'finger'
     SPHERE_RADIUS = 12
     HANDLE_RADIUS = 7
-    SPHERE_DIST = 40  # orig: 68.0 - 24.0 = 44.0
+    SPHERE_DIST = 35  # orig: 68.0 - 24.0 = 44.0
     THICKNESS = 4
     BEND_ANGLE = 0  # 30
     SPHERE_HOLE_OFFSET = 5
-    SCREW_CYLINDER_LENGTH_NUT_SIDE_OFFSET = -1  # differenzce to outer sphere radius
+    SCREW_CYLINDER_LENGTH_NUT_SIDE_OFFSET = 0  # differenzce to outer sphere radius (with -1 the wing is hitting the join)
     SCREW_CYLINDER_LENGTH_SCREW_SIDE_OFFSET = -1  # differenzce to outer sphere radius (make smaller, otherwide 30mm screw is too short - and 40mm too long)
 
     def __init__(self):
