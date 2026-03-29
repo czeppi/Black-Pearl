@@ -21,8 +21,8 @@ from uart import RightUart
 #   R2: Ring2,  RX,  blue
 #   S:  Sleeve, TX,  yellow
 
-RIGHT_TX = board.GP0
-RIGHT_RX = board.GP1
+RIGHT_TX = board.GP4  # board.GP0
+RIGHT_RX = None       # board.GP1
 
 
 def main():
@@ -104,9 +104,10 @@ class TrackballSensor:
 
 class RightKeyboardSide:
     _BUTTON_MAP = {
-        RIGHT_INDEX_LEFT: board.GP2,  # blue
+        RIGHT_INDEX2_UP: board.GP2,  # blue
         RIGHT_INDEX_UP: board.GP3,  # yellow
-        RIGHT_INDEX_DOWN: board.GP4,  # red
+        RIGHT_INDEX_DOWN: board.GP0,  # red  (orig GP4)
+        RIGHT_INDEX2_DOWN: board.GP5,  # green
         RIGHT_MIDDLE_UP: board.GP10,  # blue
         RIGHT_MIDDLE_DOWN: board.GP11,  # yellow
         RIGHT_RING_UP: board.GP12,  # red

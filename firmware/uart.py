@@ -40,7 +40,7 @@ class UartBase:
         self._uart = busio.UART(tx, rx, baudrate=_BAUDRATE)
 
     def wait_for_start(self) -> None:
-        self._uart.read()  # clear buffer
+        raise NotImplementedError()
 
     def wait_for_start_old(self) -> None:
         while True:
@@ -56,6 +56,10 @@ class UartBase:
 
 
 class RightUart(UartBase):
+
+    def wait_for_start(self) -> None:
+        #self._uart.read()  # clear buffer
+        time.sleep(1.0)  # give left side some time for init
 
     def write_mouse_move(self, dx: int, dy: int) -> None:
         print(f'write_mouse_move(dx: {type(dx)} = {dx}, dy: {type(dy)} = {dy}')
@@ -82,10 +86,15 @@ class RightUart(UartBase):
 
 class LeftUart(UartBase):
 
+    def wait_for_start(self) -> None:
+        pass
+        #self._uart.read()  # clear buffer
+        
     def read_items(self) -> Iterator[MouseMove | VKeyPressEvent]:
         while self._uart.in_waiting > 0:
             read_1st_bytes = self._uart.read(1)
             if read_1st_bytes == _START_BYTES:
+                print(f'uart 1st byte')
                 continue
             elif read_1st_bytes == _MOUSE_BYTES:
                 byte1, byte2 = self._uart.read(2)

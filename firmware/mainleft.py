@@ -35,10 +35,10 @@ from uart import LeftUart, MouseMove
 #   T:  Tip,    VCC, red
 #   R1: Ring1,  GND, black
 #   R2: Ring2,  RX,  blue
-#   S:  Sleeve, TX,  yellow
+#   S:  Sleeve, TX,  yellow  # not used anymore
 
 
-LEFT_TX = board.GP0
+LEFT_TX = None  # board.GP0
 LEFT_RX = board.GP1
 
 
@@ -70,9 +70,10 @@ class RollerEncoder:
 
 class LeftKeyboardSide:
     _BUTTON_MAP = {
-        LEFT_INDEX_RIGHT: board.GP2,  # blue
+        LEFT_INDEX2_DOWN: board.GP2,  # blue
         LEFT_INDEX_DOWN: board.GP3,  # yellow
         LEFT_INDEX_UP: board.GP4,  # red
+        LEFT_INDEX2_UP: board.GP5,  # green
         LEFT_MIDDLE_DOWN: board.GP10,  # blue
         LEFT_MIDDLE_UP: board.GP11,  # yellow
         LEFT_RING_DOWN: board.GP12,  # red
@@ -80,7 +81,7 @@ class LeftKeyboardSide:
         LEFT_PINKY_DOWN: board.GP14,  # red
         LEFT_PINKY_UP: board.GP15,  # yellow
         LEFT_THUMB_DOWN: board.GP21,  # red
-        LEFT_THUMB_UP: board.GP20,  # yellowu
+        LEFT_THUMB_UP: board.GP20,  # yellow
     }
     _ROTARY_PIN1 = board.GP16
     _ROTARY_PIN2 = board.GP17

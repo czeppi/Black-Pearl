@@ -130,25 +130,29 @@ class SwitchHolderCreatorBase:
 
 
 class SingleSwitchHolderCreator(SwitchHolderCreatorBase):  # for index finger
-    HOLDER_LEFT_RIGHT_BORDER = 6.0  # for screws
+    HOLDER_LEFT_RIGHT_BORDER = 3.0  # for screws
     HOLDER_FRONT_BACK_BORDER = 1.0
     TILT_ANGLE = 25
-    FOOT_RIGHT_HEIGHT = 4  # on the right side (smallest height)
+    FOOT_RIGHT_HEIGHT = 1  # on the right side (smallest height)
     X_OFFSET = -20  # from index location
     CORRECTIONS = SwitchHolderCorrection(dz=3, dx=-3)
 
     def _iter_top_foot_conn_points(self) -> Iterator[XY]:
         """ before Rot(Z=90)
         """
-        hole_len = self._square_hole_len
-        x = hole_len / 2 + self.HOLDER_LEFT_RIGHT_BORDER / 2
-        yield -x, 0
-        yield x, 0
+        #hole_len = self._square_hole_len
+        #x = hole_len / 2 + self.HOLDER_LEFT_RIGHT_BORDER / 2
+        #yield -x, 0
+        #yield x, 0
+        yield 0, 0
 
     def iter_foot_base_conn_points(self) -> Iterator[XY]:
         """ after Rot(Z=90)
         """
-        yield 0, 0
+        #yield 0, 0
+        dy = 5
+        yield 0, dy
+        yield 0, -dy
 
     def create(self) -> Compound:
         """ - create top + middle part with top faces parallel to xy plane
