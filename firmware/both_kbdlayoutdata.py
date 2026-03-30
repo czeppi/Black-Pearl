@@ -1,4 +1,4 @@
-from keysdata import *
+from both_keysdata import *
 
 # following combination are possible (ChatGPT)
 #

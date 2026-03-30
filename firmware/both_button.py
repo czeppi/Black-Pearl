@@ -1,4 +1,4 @@
-from base import PhysicalKeySerial
+from both_base import PhysicalKeySerial
 from digitalio import DigitalInOut, Direction, Pull
 
 

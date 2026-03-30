@@ -1,15 +1,15 @@
 import time
 
-import PMW3389
+import right_pmw3389
 import board
 from digitalio import DigitalInOut, Direction
 
-from base import PhysicalKeySerial
-from button import Button
-from kbdlayoutdata import RIGHT_KEY_GROUPS
-from keyboardhalf import KeyboardHalf, KeyGroup, VKeyPressEvent
-from keysdata import *
-from uart import UartBase
+from both_base import PhysicalKeySerial
+from both_button import Button
+from both_kbdlayoutdata import RIGHT_KEY_GROUPS
+from both_keyboardhalf import KeyboardHalf, KeyGroup, VKeyPressEvent
+from both_keysdata import *
+from both_uart import UartBase
 
 # TRRS
 #
@@ -80,7 +80,7 @@ class TrackballSensor:
     _TARGET_CPI = 800
 
     def __init__(self):
-        self._sensor = PMW3389.PMW3389(sck=self._SCK, mosi=self._MOSI, miso=self._MISO, cs=self._CS)
+        self._sensor = right_pmw3389.PMW3389(sck=self._SCK, mosi=self._MOSI, miso=self._MISO, cs=self._CS)
         self._mt_pin = DigitalInOut(board.A0)
         self._mt_pin.direction = Direction.INPUT
 

@@ -2,14 +2,14 @@ import cProfile
 import pstats
 from typing import Iterator
 
-from base import TimeInMs, PhysicalKeySerial
-from kbdlayoutdata import VIRTUAL_KEY_ORDER, LAYERS, \
+from both_base import TimeInMs, PhysicalKeySerial
+from both_kbdlayoutdata import VIRTUAL_KEY_ORDER, LAYERS, \
     MODIFIERS, RIGHT_KEY_GROUPS
 
-from keyboardcreator import KeyboardCreator
-from keyboardhalf import KeyGroup, KeyboardHalf
-from virtualkeyboard import VirtualKeyboard
-from keysdata import LEFT_INDEX_DOWN
+from left_keyboardcreator import KeyboardCreator
+from both_keyboardhalf import KeyGroup, KeyboardHalf
+from left_virtualkeyboard import VirtualKeyboard
+from both_keysdata import LEFT_INDEX_DOWN
 
 
 keyboard: VirtualKeyboard | None = None

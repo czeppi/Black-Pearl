@@ -1,15 +1,15 @@
 import unittest
 
 from adafruit_hid.keycode import Keycode as KC
-from base import KeyCode, TimeInMs, VirtualKeySerial, PhysicalKeySerial
-from keyboardcreator import KeyboardCreator
-from keyboardhalf import VKeyPressEvent, KeyGroup, \
+from both_base import KeyCode, TimeInMs, VirtualKeySerial, PhysicalKeySerial
+from left_keyboardcreator import KeyboardCreator
+from both_keyboardhalf import VKeyPressEvent, KeyGroup, \
     KeyboardHalf
-from virtualkeyboard import SimpleKey, TapHoldKey, ModKey, \
+from left_virtualkeyboard import SimpleKey, TapHoldKey, ModKey, \
     VirtualKeyboard, Layer
-from kbdlayoutdata import VIRTUAL_KEY_ORDER, LAYERS, MODIFIERS
-from reactions import KeyCmdKind, KeyCmd, ReactionCommands, OneKeyReactions
-from keysdata import RIGHT_THUMB_DOWN, RIGHT_THUMB_UP, RTU, RTM, RTD, NO_KEY, RI1U, LRU
+from both_kbdlayoutdata import VIRTUAL_KEY_ORDER, LAYERS, MODIFIERS
+from left_reactions import KeyCmdKind, KeyCmd, ReactionCommands, OneKeyReactions
+from both_keysdata import RIGHT_THUMB_DOWN, RIGHT_THUMB_UP, RTU, RTM, RTD, NO_KEY, RI1U, LRU
 
 A_DOWN = KeyCmd(kind=KeyCmdKind.KEY_PRESS, key_code=KC.A)
 A_UP = KeyCmd(kind=KeyCmdKind.KEY_RELEASE, key_code=KC.A)

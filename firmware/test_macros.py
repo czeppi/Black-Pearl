@@ -1,10 +1,10 @@
 import unittest
 
 from adafruit_hid.keycode import Keycode as KC
-from keyboardcreator import KeyboardCreator
-from keyboardhalf import VKeyPressEvent
-from keysdata import LPU, NO_KEY
-from reactions import KeyCmd, KeyCmdKind
+from left_keyboardcreator import KeyboardCreator
+from both_keyboardhalf import VKeyPressEvent
+from both_keysdata import LPU, NO_KEY
+from left_reactions import KeyCmd, KeyCmdKind
 
 
 class MacrosTests(unittest.TestCase):

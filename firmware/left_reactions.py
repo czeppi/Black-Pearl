@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from base import KeyCode
+from both_base import KeyCode
 
 
 class KeyCmdKind:  # enum

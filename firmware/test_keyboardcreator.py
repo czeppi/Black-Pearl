@@ -1,12 +1,12 @@
 import unittest
 
 from adafruit_hid.keycode import Keycode as KC
-from kbdlayoutdata import VIRTUAL_KEY_ORDER, LAYERS, \
+from both_kbdlayoutdata import VIRTUAL_KEY_ORDER, LAYERS, \
     MODIFIERS
-from keyboardcreator import KeyboardCreator
-from keyboardhalf import VKeyPressEvent
-from keysdata import LPU, NO_KEY, LPM
-from reactions import KeyCmdKind, KeyCmd
+from left_keyboardcreator import KeyboardCreator
+from both_keyboardhalf import VKeyPressEvent
+from both_keysdata import LPU, NO_KEY, LPM
+from left_reactions import KeyCmdKind, KeyCmd
 
 
 MACROS = {

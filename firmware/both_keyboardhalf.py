@@ -5,7 +5,7 @@ try:
 except ImportError:
     pass
 
-from base import PhysicalKeySerial, TimeInMs, VirtualKeySerial
+from both_base import PhysicalKeySerial, TimeInMs, VirtualKeySerial
 
 
 # def main():

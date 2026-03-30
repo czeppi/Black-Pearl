@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from keyboardcreator import KeyboardCreator, ReactionName, _KeyReactionData
-from reactions import KeyCmdKind, ReactionCommands, KeyCmd, MouseButtonCmd, MouseWheelCmd, ReactionCmd, \
+from left_keyboardcreator import KeyboardCreator, ReactionName, _KeyReactionData
+from left_reactions import KeyCmdKind, ReactionCommands, KeyCmd, MouseButtonCmd, MouseWheelCmd, ReactionCmd, \
     MouseButtonCmdKind, LogCmd, KeyCmdKindValue
 
 try:
@@ -18,13 +18,13 @@ from adafruit_hid.keycode import Keycode as KC
 from adafruit_hid.keyboard import Keyboard
 from adafruit_hid.mouse import Mouse
 
-from base import PhysicalKeySerial, TimeInMs, KeyCode
-from button import Button
-from kbdlayoutdata import LEFT_KEY_GROUPS, VIRTUAL_KEY_ORDER, LAYERS, MODIFIERS, LAYERS_WITHOUT_MODIFIERS
-from macroslib import read_macros
-from keyboardhalf import KeyboardHalf, KeyGroup, VKeyPressEvent
-from keysdata import *
-from uart import UartBase
+from both_base import PhysicalKeySerial, TimeInMs, KeyCode
+from both_button import Button
+from both_kbdlayoutdata import LEFT_KEY_GROUPS, VIRTUAL_KEY_ORDER, LAYERS, MODIFIERS, LAYERS_WITHOUT_MODIFIERS
+from left_macroslib import read_macros
+from both_keyboardhalf import KeyboardHalf, KeyGroup, VKeyPressEvent
+from both_keysdata import *
+from both_uart import UartBase
 
 # TRRS
 #

@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from base import TimeInMs, KeyCode, VirtualKeySerial
-from keyboardhalf import VKeyPressEvent
-from reactions import KeyCmdKind, KeyCmd, OneKeyReactions, ReactionCmd
+from both_base import TimeInMs, KeyCode, VirtualKeySerial
+from both_keyboardhalf import VKeyPressEvent
+from left_reactions import KeyCmdKind, KeyCmd, OneKeyReactions, ReactionCmd
 
 try:
     from typing import Iterator

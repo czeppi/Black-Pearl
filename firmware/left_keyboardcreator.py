@@ -1,7 +1,7 @@
-from base import KeyCode, VirtualKeySerial
-from keysdata import NO_KEY
-from virtualkeyboard import SimpleKey, ModKey, LayerKey, VirtualKeyboard
-from reactions import KeyCmdKind, KeyCmd, OneKeyReactions, MouseButtonCmd, MouseWheelCmd, MouseButtonCmdKind, LogCmd
+from both_base import KeyCode, VirtualKeySerial
+from both_keysdata import NO_KEY
+from left_virtualkeyboard import SimpleKey, ModKey, LayerKey, VirtualKeyboard
+from left_reactions import KeyCmdKind, KeyCmd, OneKeyReactions, MouseButtonCmd, MouseWheelCmd, MouseButtonCmdKind, LogCmd
 
 try:
     from typing import Callable, Iterator, Optional

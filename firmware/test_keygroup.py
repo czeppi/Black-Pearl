@@ -1,7 +1,7 @@
 import unittest
 
-from base import TimeInMs, PhysicalKeySerial, VirtualKeySerial
-from keyboardhalf import KeyGroup
+from both_base import TimeInMs, PhysicalKeySerial, VirtualKeySerial
+from both_keyboardhalf import KeyGroup
 
 
 PKEY_A = 1
