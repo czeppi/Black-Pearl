@@ -29,8 +29,8 @@ MACROS = {
 def main():
     global keyboard, kbd_half
 
-    kbd_half = KeyboardHalf(key_groups=[KeyGroup(group_serial, group_data)
-                                        for group_serial, group_data in RIGHT_KEY_GROUPS.items()])
+    kbd_half = KeyboardHalf(key_groups=[KeyGroup(group_data)
+                                        for group_data in RIGHT_KEY_GROUPS])
 
     creator = KeyboardCreator(virtual_key_order=VIRTUAL_KEY_ORDER,
                               layers=LAYERS,

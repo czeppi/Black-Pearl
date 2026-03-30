@@ -54,7 +54,7 @@ class KeyGroupTestSolo(KeyGroupTestBase):
 
     @staticmethod
     def _create_key_group() -> KeyGroup:
-        return KeyGroup(serial=1, vkey_map={VKEY_A: [PKEY_A]})
+        return KeyGroup(vkey_map={VKEY_A: [PKEY_A]})
 
     def test_simple(self):
         self._step(0, press=PKEY_A, expect=[(VKEY_A, True)])
@@ -65,9 +65,9 @@ class KeyGroupTest2Combo(KeyGroupTestBase):
 
     @staticmethod
     def _create_key_group() -> KeyGroup:
-        return KeyGroup(serial=1, vkey_map={VKEY_A: [PKEY_A],
-                                            VKEY_B: [PKEY_B],
-                                            VKEY_C: [PKEY_A, PKEY_B]})
+        return KeyGroup(vkey_map={VKEY_A: [PKEY_A],
+                                  VKEY_B: [PKEY_B],
+                                  VKEY_C: [PKEY_A, PKEY_B]})
 
     def test_a_fast1(self):
         """       COMBO_TERM

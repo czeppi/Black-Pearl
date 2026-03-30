@@ -7,9 +7,9 @@ from digitalio import DigitalInOut, Direction
 from base import PhysicalKeySerial
 from button import Button
 from kbdlayoutdata import RIGHT_KEY_GROUPS
-from keyboardhalf import KeyboardHalf, KeyGroup
+from keyboardhalf import KeyboardHalf, KeyGroup, VKeyPressEvent
 from keysdata import *
-from uart import RightUart
+from uart import UartBase
 
 # TRRS
 #
@@ -29,6 +29,35 @@ def main():
     right_kbd = RightKeyboardSide()
     right_kbd.init()
     right_kbd.main_loop()
+
+
+class RightUart(UartBase):
+
+    def wait_for_start(self) -> None:
+        #self._uart.read()  # clear buffer
+        time.sleep(1.0)  # give left side some time for init
+
+    def write_mouse_move(self, dx: int, dy: int) -> None:
+        print(f'write_mouse_move(dx: {type(dx)} = {dx}, dy: {type(dy)} = {dy}')
+        x_bytes = dx.to_bytes(1, 'big', signed=True)
+        y_bytes = dy.to_bytes(1, 'big', signed=True)
+        data = self._MOUSE_BYTES + x_bytes + y_bytes
+        print(f'uart write {data}...')
+        self._uart.write(data)
+
+    def write_vkey_events(self, vkey_events: list[VKeyPressEvent]) -> None:
+        for vkey_evt in vkey_events:
+            if vkey_evt.pressed:
+                signed_serial = vkey_evt.vkey_serial
+            else:
+                signed_serial = -vkey_evt.vkey_serial
+
+            print(f'uart signed_serial={signed_serial}')
+            vkey_bytes = signed_serial.to_bytes(1, 'big', signed=True)
+            data = self._KEY_EVENT_BYTES + vkey_bytes
+
+            print(f'uart write {data}...')
+            self._uart.write(data)
 
 
 class TrackballSensor:
@@ -122,8 +151,8 @@ class RightKeyboardSide:
         self._trackball_sensor = TrackballSensor()
         self._uart = RightUart(tx=RIGHT_TX, rx=RIGHT_RX)
         self._buttons = [Button(pkey_serial=pkey_serial, gp_pin=gp_pin) for pkey_serial, gp_pin in self._BUTTON_MAP.items()]
-        self._kbd_half = KeyboardHalf(key_groups=[KeyGroup(group_serial, group_data)
-                                                  for group_serial, group_data in RIGHT_KEY_GROUPS.items()])
+        self._kbd_half = KeyboardHalf(key_groups=[KeyGroup(group_data)
+                                                  for group_data in RIGHT_KEY_GROUPS])
     def init(self) -> None:
         print('init')
         self._trackball_sensor.init_sensor()

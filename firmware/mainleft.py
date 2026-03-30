@@ -24,8 +24,7 @@ from kbdlayoutdata import LEFT_KEY_GROUPS, VIRTUAL_KEY_ORDER, LAYERS, MODIFIERS,
 from macroslib import read_macros
 from keyboardhalf import KeyboardHalf, KeyGroup, VKeyPressEvent
 from keysdata import *
-from uart import LeftUart, MouseMove
-
+from uart import UartBase
 
 # TRRS
 #
@@ -46,6 +45,42 @@ def main():
     left_kbd = LeftKeyboardSide()
     left_kbd.init()
     left_kbd.main_loop()
+
+
+class LeftUart(UartBase):
+
+    def wait_for_start(self) -> None:
+        pass
+        # self._uart.read()  # clear buffer
+
+    def read_items(self) -> Iterator[MouseMove | VKeyPressEvent]:
+        while self._uart.in_waiting > 0:
+            read_1st_bytes = self._uart.read(1)
+            if read_1st_bytes == self._MOUSE_BYTES:
+                byte1, byte2 = self._uart.read(2)
+                print(f'uart readd mouse: byte1={byte1}, byte2={byte2}')
+                dx = byte1 if byte1 < 128 else byte1 - 256
+                dy = byte2 if byte2 < 128 else byte2 - 256
+                print(f'uart read mouse: dx={dx}, dy={dy}')
+                yield MouseMove(-dx, -dy)
+            elif read_1st_bytes == self._KEY_EVENT_BYTES:
+                read_bytes = self._uart.read(1)
+                byte1 = read_bytes[0]
+                signed_value = byte1 if byte1 < 128 else byte1 - 256
+                vkey_serial = abs(signed_value)
+                pressed = (signed_value > 0)
+                print(f'uart read key event: {vkey_serial} {pressed}')
+                yield VKeyPressEvent(vkey_serial=vkey_serial, pressed=pressed)
+            else:
+                print(f'uart read unknown byte: {read_1st_bytes}')
+
+
+class MouseMove:
+
+    def __init__(self, dx: int, dy: int):
+        # public
+        self.dx = dx
+        self.dy = dy
 
 
 class RollerEncoder:
@@ -90,8 +125,8 @@ class LeftKeyboardSide:
         self._uart = LeftUart(tx=LEFT_TX, rx=LEFT_RX)
         self._roller_encoder = RollerEncoder(self._ROTARY_PIN1, self._ROTARY_PIN2)
         self._buttons = [Button(pkey_serial=pkey_serial, gp_pin=gp_pin) for pkey_serial, gp_pin in self._BUTTON_MAP.items()]
-        self._kbd_half = KeyboardHalf(key_groups=[KeyGroup(group_serial, group_data)
-                                                  for group_serial, group_data in LEFT_KEY_GROUPS.items()])
+        self._kbd_half = KeyboardHalf(key_groups=[KeyGroup(group_data)
+                                                  for group_data in LEFT_KEY_GROUPS])
         macros = read_macros()
 
         creator = KeyboardCreator(virtual_key_order=VIRTUAL_KEY_ORDER,

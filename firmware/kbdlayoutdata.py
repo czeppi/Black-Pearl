@@ -34,72 +34,72 @@ from keysdata import *
 # RX: GP5, GP9,  GP21?  # GP21 not in data sheet
 
 
-LEFT_KEY_GROUPS = {
-    LP: {
+LEFT_KEY_GROUPS = [
+    {
         LPU: [LEFT_PINKY_UP],
         LPM: [LEFT_PINKY_UP, LEFT_PINKY_DOWN],
         LPD: [LEFT_PINKY_DOWN],
     },
-    LR: {
+    {
         LRU: [LEFT_RING_UP],
         LRM: [LEFT_RING_UP, LEFT_RING_DOWN],
         LRD: [LEFT_RING_DOWN],
     },
-    LM: {
+    {
         LMU: [LEFT_MIDDLE_UP],
         LMM: [LEFT_MIDDLE_UP, LEFT_MIDDLE_DOWN],
         LMD: [LEFT_MIDDLE_DOWN],
     },
-    LI: {
+    {
         LI1U: [LEFT_INDEX_UP],
         LI1M: [LEFT_INDEX_UP, LEFT_INDEX_DOWN],
         LI1D: [LEFT_INDEX_DOWN],
     },
-    LI2: {
+    {
         LI2U: [LEFT_INDEX2_UP],
         LI2M: [LEFT_INDEX2_UP, LEFT_INDEX2_DOWN],
         LI2D: [LEFT_INDEX2_DOWN],
     },
-    LT: {
+    {
         LTU: [LEFT_THUMB_UP],
         LTM: [LEFT_THUMB_UP, LEFT_THUMB_DOWN],
         LTD: [LEFT_THUMB_DOWN],
     },
-}
+]
 
 
-RIGHT_KEY_GROUPS = {
-    RT: {
+RIGHT_KEY_GROUPS = [
+    {
         RTU: [RIGHT_THUMB_UP],
         RTM: [RIGHT_THUMB_UP, RIGHT_THUMB_DOWN],
         RTD: [RIGHT_THUMB_DOWN],
     },
-    RI2: {
+    {
         RI2U: [RIGHT_INDEX2_UP],
         RI2M: [RIGHT_INDEX2_UP, RIGHT_INDEX2_DOWN],
         RI2D: [RIGHT_INDEX2_DOWN],
     },
-    RI: {
+    {
         RI1U: [RIGHT_INDEX_UP],
         RI1M: [RIGHT_INDEX_UP, RIGHT_INDEX_DOWN],
         RI1D: [RIGHT_INDEX_DOWN],
     },
-    RM: {
+    {
         RMU: [RIGHT_MIDDLE_UP],
         RMM: [RIGHT_MIDDLE_UP, RIGHT_MIDDLE_DOWN],
         RMD: [RIGHT_MIDDLE_DOWN],
     },
-    RR: {
+    {
         RRU: [RIGHT_RING_UP],
         RRM: [RIGHT_RING_UP, RIGHT_RING_DOWN],
         RRD: [RIGHT_RING_DOWN],
     },
-    RP: {
+    {
         RPU: [RIGHT_PINKY_UP],
         RPM: [RIGHT_PINKY_UP, RIGHT_PINKY_DOWN],
         RPD: [RIGHT_PINKY_DOWN],
     },
-}
+]
 
 
 VIRTUAL_KEY_ORDER = [

@@ -80,18 +80,3 @@ VKEY_NAMES = {
     RPM: 'RPM',
     RPD: 'RPD',
 }
-
-# virtual groups
-LP = 1
-LR = 2
-LM = 3
-LI = 4
-LT = 5
-RT = 6
-RI = 7
-RM = 8
-RR = 9
-RP = 10
-
-LI2 = 11   # todo: check, if virtual group indices necessary
-RI2 = 12

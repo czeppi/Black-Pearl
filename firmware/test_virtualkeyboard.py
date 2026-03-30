@@ -9,7 +9,7 @@ from virtualkeyboard import SimpleKey, TapHoldKey, ModKey, \
     VirtualKeyboard, Layer
 from kbdlayoutdata import VIRTUAL_KEY_ORDER, LAYERS, MODIFIERS
 from reactions import KeyCmdKind, KeyCmd, ReactionCommands, OneKeyReactions
-from keysdata import RIGHT_THUMB_DOWN, RIGHT_THUMB_UP, RTU, RTM, RTD, NO_KEY, RT, RI1U, LRU
+from keysdata import RIGHT_THUMB_DOWN, RIGHT_THUMB_UP, RTU, RTM, RTD, NO_KEY, RI1U, LRU
 
 A_DOWN = KeyCmd(kind=KeyCmdKind.KEY_PRESS, key_code=KC.A)
 A_UP = KeyCmd(kind=KeyCmdKind.KEY_RELEASE, key_code=KC.A)
@@ -227,7 +227,7 @@ class ThumbUpKeyTest(unittest.TestCase):  # keyboard with only 'thumb-up' key
 
     @staticmethod
     def _create_kbd_half() -> KeyboardHalf:
-        rt_group = KeyGroup(RT, {
+        rt_group = KeyGroup({
                         RTU: [RIGHT_THUMB_UP],
                         RTM: [RIGHT_THUMB_UP, RIGHT_THUMB_DOWN],
                         RTD: [RIGHT_THUMB_DOWN],

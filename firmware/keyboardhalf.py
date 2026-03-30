@@ -5,7 +5,7 @@ try:
 except ImportError:
     pass
 
-from base import PhysicalKeySerial, TimeInMs, VirtualKeySerial, KeyGroupSerial
+from base import PhysicalKeySerial, TimeInMs, VirtualKeySerial
 
 
 # def main():
@@ -67,9 +67,8 @@ class VKeyPressEvent:
 class KeyGroup:
     COMBO_TERM = 100  # ms
 
-    def __init__(self, serial: KeyGroupSerial, vkey_map: dict[VirtualKeySerial, list[PhysicalKeySerial]]):
+    def __init__(self, vkey_map: dict[VirtualKeySerial, list[PhysicalKeySerial]]):
         # static
-        self._serial = serial
         self._pkeys_of_this_group = frozenset(self._iter_group_pkeys(vkey_map))
         self._vkey2pkeys = { vkey: frozenset(pkeys) for vkey, pkeys in vkey_map.items()}
         self._pkeys2vkeys = { frozenset(pkeys): vkey for vkey, pkeys in vkey_map.items()}
@@ -97,10 +96,6 @@ class KeyGroup:
             vkey: any(pkeys_set < other_set for other_set in vkey2pkeys.values())
             for vkey, pkeys_set in vkey2pkeys.items()
         }
-
-    @property
-    def serial(self) -> KeyGroupSerial:
-        return self._serial
 
     @property
     def time_of_decision(self) -> TimeInMs | None:
