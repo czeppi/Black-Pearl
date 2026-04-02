@@ -5,6 +5,7 @@ from both_base import KeyCode, TimeInMs, VirtualKeySerial, PhysicalKeySerial
 from left_keyboardcreator import KeyboardCreator
 from both_keyboardhalf import VKeyPressEvent, KeyGroup, \
     KeyboardHalf
+from left_logging import EventLogger
 from left_virtualkeyboard import SimpleKey, TapHoldKey, ModKey, \
     VirtualKeyboard, Layer, LayerKey
 from both_kbdlayoutdata import VIRTUAL_KEY_ORDER, LAYERS, MODIFIERS
@@ -215,6 +216,10 @@ class TapKeyTest(VirtualKeyboardTestBase):
 
 class SimpleLayerTest(VirtualKeyboardTestBase):
 
+    def setUp(self):
+        super().setUp()
+        self._event_logger = EventLogger()
+
     def _create_virtual_keyboard(self) -> VirtualKeyboard:
         default_layer: Layer = {
             VKEY_A: self._create_key_assignment(KC.A),
@@ -229,7 +234,7 @@ class SimpleLayerTest(VirtualKeyboardTestBase):
                                layer_keys=[LayerKey(serial=VKEY_A, layer=layer1)],
                                default_layer=default_layer)
 
-    def test_abba3(self) -> None:
+    def test_abba(self) -> None:
         """    TAPPING_TERM
         +--------|--------------+
         | +------|----+         |
@@ -239,13 +244,30 @@ class SimpleLayerTest(VirtualKeyboardTestBase):
         |        | |   b   |    |
         |        | +-------+    |
         +--------|--------------+
-        =>               c
+        =>            c
         """
         self._step(0, press=VKEY_A, expected_key_seq=[])
         self._step(201, expected_key_seq=[])
         self._step(210, press=VKEY_B, expected_key_seq=[C_DOWN])
         self._step(220, release=VKEY_A, expected_key_seq=[])
-        self._step(230, release=VKEY_A, expected_key_seq=[C_UP])
+        self._step(230, release=VKEY_B, expected_key_seq=[C_UP])
+
+    def _step(self, time: TimeInMs, expected_key_seq: ReactionCommands,
+              press: VirtualKeySerial | None = None, release: VirtualKeySerial | None = None) -> None:
+
+        vkey_events: list[VKeyPressEvent] = []
+        if press is not None:
+            vkey_event = VKeyPressEvent(press, pressed=True)
+            vkey_events.append(vkey_event)
+        elif release is not None:
+            vkey_event = VKeyPressEvent(release, pressed=False)
+            vkey_events.append(vkey_event)
+
+        act_reaction_commands = list(self._kbd.update(time=time, vkey_events=vkey_events))
+
+        self._event_logger.update(t=time, vkey_events=vkey_events, reaction_commands=act_reaction_commands)
+
+        self.assertEqual(expected_key_seq, act_reaction_commands)
 
 
 class ThumbUpKeyTest(unittest.TestCase):  # keyboard with only 'thumb-up' key

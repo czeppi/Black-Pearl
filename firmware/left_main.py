@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from left_keyboardcreator import KeyboardCreator, ReactionName, _KeyReactionData
-from left_reactions import KeyCmdKind, ReactionCommands, KeyCmd, MouseButtonCmd, MouseWheelCmd, ReactionCmd, \
-    MouseButtonCmdKind, LogCmd, KeyCmdKindValue
+from left_logging import LogItem, LogItemDumper, EventLogger
+from left_reactions import KeyCmdKind, KeyCmd, MouseButtonCmd, MouseWheelCmd, ReactionCmd, \
+    MouseButtonCmdKind, LogCmd
 
 try:
     from typing import Iterator
@@ -18,7 +19,7 @@ from adafruit_hid.keycode import Keycode as KC
 from adafruit_hid.keyboard import Keyboard
 from adafruit_hid.mouse import Mouse
 
-from both_base import PhysicalKeySerial, TimeInMs, KeyCode
+from both_base import PhysicalKeySerial, TimeInMs
 from both_button import Button
 from both_kbdlayoutdata import LEFT_KEY_GROUPS, VIRTUAL_KEY_ORDER, LAYERS, MODIFIERS, LAYERS_WITHOUT_MODIFIERS
 from left_macroslib import read_macros
@@ -40,11 +41,18 @@ from both_uart import UartBase
 LEFT_TX = None  # board.GP0
 LEFT_RX = board.GP1
 
+WITH_PRINT = True
+
 
 def main():
     left_kbd = LeftKeyboardSide()
     left_kbd.init()
     left_kbd.main_loop()
+
+
+def _print(text: str) -> None:
+    if WITH_PRINT:
+        print(text)
 
 
 class LeftUart(UartBase):
@@ -58,10 +66,10 @@ class LeftUart(UartBase):
             read_1st_bytes = self._uart.read(1)
             if read_1st_bytes == self._MOUSE_BYTES:
                 byte1, byte2 = self._uart.read(2)
-                print(f'uart readd mouse: byte1={byte1}, byte2={byte2}')
+                _print(f'uart readd mouse: byte1={byte1}, byte2={byte2}')
                 dx = byte1 if byte1 < 128 else byte1 - 256
                 dy = byte2 if byte2 < 128 else byte2 - 256
-                print(f'uart read mouse: dx={dx}, dy={dy}')
+                _print(f'uart read mouse: dx={dx}, dy={dy}')
                 yield MouseMove(-dx, -dy)
             elif read_1st_bytes == self._KEY_EVENT_BYTES:
                 read_bytes = self._uart.read(1)
@@ -69,10 +77,10 @@ class LeftUart(UartBase):
                 signed_value = byte1 if byte1 < 128 else byte1 - 256
                 vkey_serial = abs(signed_value)
                 pressed = (signed_value > 0)
-                print(f'uart read key event: {vkey_serial} {pressed}')
+                _print(f'uart read key event: {vkey_serial} {pressed}')
                 yield VKeyPressEvent(vkey_serial=vkey_serial, pressed=pressed)
             else:
-                print(f'uart read unknown byte: {read_1st_bytes}')
+                _print(f'uart read unknown byte: {read_1st_bytes}')
 
 
 class MouseMove:
@@ -143,18 +151,19 @@ class LeftKeyboardSide:
         self._mouse_device = Mouse(usb_hid.devices)
         self._queue: list[QueueItem] = []
         self._log_items: list[LogItem] = []
+        self._event_logger = EventLogger()
 
     def init(self) -> None:
-        print('init uart...')
+        _print('init uart...')
         self._uart.wait_for_start()
 
     def main_loop(self) -> None:
-        print('start main loop')
+        _print('start main loop')
         i = 0
         while True:
             try:
                 if i % 500 == 0:
-                    print(i)
+                    _print(i)
                 self._read_devices()
 
                 for queue_item in self._read_queue_items():
@@ -162,19 +171,19 @@ class LeftKeyboardSide:
 
                 time.sleep(0.001)
             except Exception as err:
-                print(f'ERROR : {err}')
+                _print(f'ERROR : {err}')
                 time.sleep(0.5)
             i += 1
 
     def _read_devices(self) -> None:
         t = time.monotonic() * 1000
 
-        #print(f'_read_devices: t={t}')
+        # _print(f'_read_devices: t={t}')
         my_pressed_pkeys = self._get_pressed_pkeys()
 
         encoder_offset = self._roller_encoder.update()
         if encoder_offset != 0:
-            print(f'encoder_offset={encoder_offset}')
+            _print(f'encoder_offset={encoder_offset}')
             self._mouse_device.move(wheel=encoder_offset)
 
         mouse_dx = mouse_dy = 0
@@ -192,7 +201,7 @@ class LeftKeyboardSide:
                                encoder_offset=encoder_offset,
                                my_pressed_pkeys=my_pressed_pkeys,
                                other_vkey_events=other_vkey_events)
-        #print(f'read_devices: {queue_item}')
+        #_print(f'read_devices: {queue_item}')
         self._queue.append(queue_item)
 
     def _read_queue_items(self) -> Iterator[QueueItem]:
@@ -202,30 +211,26 @@ class LeftKeyboardSide:
             yield queue_item
 
     def _process_queue_item(self, queue_item: QueueItem) -> None:
-        #print(f'_process_queue_item: {queue_item}')
+        #_print(f'_process_queue_item: {queue_item}')
         mouse_dx = queue_item.mouse_move.dx
         mouse_dy = queue_item.mouse_move.dy
         if mouse_dx != 0 or mouse_dy != 0:
             self._mouse_device.move(mouse_dx, mouse_dy)
 
         if queue_item.encoder_offset != 0:
-            print(f'mouse wheel: {queue_item.encoder_offset}')
+            _print(f'mouse wheel: {queue_item.encoder_offset}')
             self._mouse_device.move(wheel=queue_item.encoder_offset)
 
         my_vkey_events = list(self._kbd_half.update(time=queue_item.time,
                                                     cur_pressed_pkeys=queue_item.my_pressed_pkeys))
+        vkey_events = queue_item.other_vkey_events + my_vkey_events
         t = time.monotonic() * 1000
-        reaction_commands = list(self._virt_keyboard.update(time=t,
-                                                            vkey_events=queue_item.other_vkey_events + my_vkey_events))
+        reaction_commands = list(self._virt_keyboard.update(time=t, vkey_events=vkey_events))
+
+        self._event_logger.update(t=t, vkey_events=vkey_events, reaction_commands=reaction_commands)
+
         for reaction_cmd in reaction_commands:
             self._send_reaction_cmd(reaction_cmd)
-
-        if len(my_vkey_events) > 0 or len(queue_item.other_vkey_events) > 0 or len(reaction_commands) > 0:
-            log_item = LogItem(time_=t, my_vkey_events=my_vkey_events, other_vkey_events=queue_item.other_vkey_events,
-                               reaction_commands=reaction_commands)
-            self._log_items.append(log_item)
-            if len(self._log_items) > 7:
-                self._log_items = self._log_items[-7:]
 
     def _get_pressed_pkeys(self) -> set[PhysicalKeySerial]:
         return {button.pkey_serial
@@ -239,8 +244,10 @@ class LeftKeyboardSide:
         elif isinstance(reaction_cmd, MouseButtonCmd):
             mouse_cmd = reaction_cmd
             if mouse_cmd.kind == MouseButtonCmdKind.MOUSE_PRESS:
+                _print(f'press mouse button {mouse_cmd.button_no}')
                 self._mouse_device.press(mouse_cmd.button_no)
             elif mouse_cmd.kind == MouseButtonCmdKind.MOUSE_RELEASE:
+                _print(f'release mouse button {mouse_cmd.button_no}')
                 self._mouse_device.release(mouse_cmd.button_no)
         elif isinstance(reaction_cmd, MouseWheelCmd):
             self._mouse_device.move(wheel=reaction_cmd.offset)
@@ -272,89 +279,6 @@ class QueueItem:
 
     def __str__(self) -> str:
         return f'QueueItem({self.time}, mouse=({self.mouse_move.dx, self.mouse_move.dy}), my-pkeys=({self.my_pressed_pkeys})), other-vkey={self.other_vkey_events})'
-
-
-class LogItem:
-
-    def __init__(self, time_: TimeInMs, my_vkey_events: list[VKeyPressEvent], other_vkey_events: list[VKeyPressEvent],
-                 reaction_commands: list[ReactionCmd]):
-        self._time = time_
-        self._my_vkey_events = my_vkey_events
-        self._other_vkey_events = other_vkey_events
-        self._reaction_commands = reaction_commands
-
-    @property
-    def time(self) -> TimeInMs:
-        return self._time
-
-    @property
-    def my_vkey_events(self) -> list[VKeyPressEvent]:
-        return self._my_vkey_events
-
-    @property
-    def other_vkey_events(self) -> list[VKeyPressEvent]:
-        return self._other_vkey_events
-
-    @property
-    def reaction_commands(self) -> list[ReactionCmd]:
-        return self._reaction_commands
-
-
-class LogItemDumper:
-
-    def __init__(self, key_code_map: dict[KeyCode, str]):
-        self._key_code_map = key_code_map
-
-    def dump(self, log_item: LogItem) -> str:
-        return ', '.join(self._iter_str_parts(log_item))
-
-    def _iter_str_parts(self, log_item: LogItem) -> Iterator[str]:
-        yield f'{int(log_item.time)}: '
-
-        yield ', '.join(self._iter_vkey_parts(log_item))
-
-        if len(log_item.reaction_commands) > 0:
-            reaction_str = ', '.join(self._create_reaction_str(reaction_cmd)
-                                     for reaction_cmd in log_item.reaction_commands)
-            yield ' -> [' + reaction_str + ']'
-
-    def _iter_vkey_parts(self, log_item: LogItem) -> Iterator[str]:
-        if len(log_item.other_vkey_events) > 0:
-            other_str = self._create_vkey_events_str(log_item.other_vkey_events)
-            yield f'other={other_str}'
-
-        if len(log_item.my_vkey_events) > 0:
-            self_str = self._create_vkey_events_str(log_item.my_vkey_events)
-            yield f'self={self_str}'
-
-    def _create_vkey_events_str(self, vkey_events: list[VKeyPressEvent]) -> str:
-        return '[' + ', '.join(self._create_vkey_event_str(vkey_event) for vkey_event in vkey_events) + ']'
-
-    @staticmethod
-    def _create_vkey_event_str(vkey_event: VKeyPressEvent) -> str:
-        prefix = '+' if vkey_event.pressed else '-'
-        vkey_name = VKEY_NAMES[vkey_event.vkey_serial].lower()
-        return prefix + vkey_name
-
-    def _create_reaction_str(self, reaction_cmd: ReactionCmd) -> str:
-        if isinstance(reaction_cmd, KeyCmd):
-            key_cmd = reaction_cmd
-            kind_str = self._create_key_cmd_kind_str(key_cmd.kind)
-            key_code_str = self._key_code_map[key_cmd.key_code]
-            return f'{kind_str}{key_code_str}'
-        else:
-            return ''
-
-    @staticmethod
-    def _create_key_cmd_kind_str(key_cmd_kind: KeyCmdKindValue) -> str:
-        if key_cmd_kind == KeyCmdKind.KEY_PRESS:
-            return '+'
-        elif key_cmd_kind == KeyCmdKind.KEY_RELEASE:
-            return '-'
-        elif key_cmd_kind == KeyCmdKind.KEY_SEND:
-            return '*'
-        else:
-            return ''
 
 
 class TextToKeyCodeConverter:
@@ -397,10 +321,13 @@ class KeyCmdExecuter:
 
     def execute(self, key_cmd: KeyCmd) -> None:
         if key_cmd.kind == KeyCmdKind.KEY_PRESS:
+            _print(f'press key {key_cmd.key_code}...')
             self._kbd_device.press(key_cmd.key_code)
         elif key_cmd.kind == KeyCmdKind.KEY_RELEASE:
+            _print(f'release key {key_cmd.key_code}...')
             self._kbd_device.release(key_cmd.key_code)
         elif key_cmd.kind == KeyCmdKind.KEY_SEND:
+            _print(f'send key {key_cmd.key_code}...')
             self._kbd_device.send(key_cmd.key_code)
 
 

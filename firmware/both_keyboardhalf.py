@@ -63,6 +63,15 @@ class VKeyPressEvent:
         self.vkey_serial = vkey_serial
         self.pressed = pressed
 
+    def __str__(self):
+        if self.pressed:
+            return f'vkey-{self.vkey_serial}-pressed'
+        else:
+            return f'vkey-{self.vkey_serial}-release'
+
+    def __repr__(self):
+        return str(self)
+
 
 class KeyGroup:
     COMBO_TERM = 100  # ms
