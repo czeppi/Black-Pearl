@@ -17,12 +17,10 @@ class LogItem:
     """ !! no dataclass in circuit-python !!
     """
 
-    def __init__(self, time_: TimeInMs, vkey_events: list[VKeyPressEvent], reaction_commands: list[ReactionCmd],
-                 could_start_item: bool):
+    def __init__(self, time_: TimeInMs, vkey_events: list[VKeyPressEvent], reaction_commands: list[ReactionCmd]):
         self._time = time_
         self._vkey_events = vkey_events
         self._reaction_commands = reaction_commands
-        self._could_start_item = could_start_item
 
     @property
     def time(self) -> TimeInMs:
@@ -35,10 +33,6 @@ class LogItem:
     @property
     def reaction_commands(self) -> list[ReactionCmd]:
         return self._reaction_commands
-
-    @property
-    def could_start_item(self) -> bool:
-        return self._could_start_item
 
 
 class LogItemDumper:
@@ -100,32 +94,19 @@ class EventLogger:
         self._pressed_vkeys: set[VirtualKeySerial] = set()
         self._pressed_key_codes: set[KeyCode] = set()
         self._pressed_mouse_buttons: set[int] = set()
-        self._log_items: list[LogItem] = []
 
     def update(self, t: TimeInMs, vkey_events: list[VKeyPressEvent], reaction_commands: list[ReactionCmd]) -> None:
         if len(vkey_events) == 0 and len(reaction_commands) == 0:
             return
 
-        self._remove_old_log_items(t)
-        could_start_item = (len(self._pressed_vkeys) == 0)
-        log_item = LogItem(time_=t, vkey_events=vkey_events, reaction_commands=reaction_commands,
-                           could_start_item=could_start_item)
-        self._log_items.append(log_item)
+        for line in self._iter_log_item_lines(t=t, vkey_events=vkey_events, reaction_commands=reaction_commands):
+            print(line)
 
-        errors = list(self._iter_update_errors(vkey_events=vkey_events, reaction_commands=reaction_commands))
-        if len(errors) > 0:
-            # self._dump_logs(t=t, errors=errors)
-            self._print_logs(errors=errors)
+        for err_text in self._iter_update_errors(vkey_events=vkey_events, reaction_commands=reaction_commands):
+            print(f'ERR: {err_text}')
 
-    def _remove_old_log_items(self, t: TimeInMs) -> None:
-        min_keeping_time_in_ms = 60000
-        i0 = 0
-        for i, log_item in enumerate(self._log_items):
-            dt = t - log_item.time
-            if dt > min_keeping_time_in_ms and log_item.could_start_item:
-                i0 = i
-
-        self._log_items = self._log_items[i0:]
+        if len(self._pressed_vkeys) == 0:
+            print('--------------------')
 
     def _iter_update_errors(self, vkey_events: list[VKeyPressEvent], reaction_commands: list[ReactionCmd]) -> Iterator[
         str]:
@@ -184,31 +165,46 @@ class EventLogger:
             else:
                 self._pressed_mouse_buttons.remove(button_no)
 
-    def _dump_logs(self, t: TimeInMs, errors: list[str]) -> None:
-        log_dpath = '/logs'
-        #if not self._exists_dir(log_dpath):
-        #    os.mkdir(log_dpath)
+    def _iter_log_item_lines(self, t: TimeInMs, vkey_events: list[VKeyPressEvent],
+                             reaction_commands: list[ReactionCmd]) -> Iterator[str]:
+        events_str = ', '.join(str(evt) for evt in vkey_events)
 
-        log_fpath = f'{log_dpath}/{t}.log'
-        log_lines = list(self._iter_log_lines(errors))
-        with open(log_fpath, 'w') as fh:
-            buf = '\n'.join(log_lines)
-            fh.write(buf)
+        key_cmd_string_parts = list(self._iter_key_cmd_strings(reaction_commands))
+        key_cmd_str = ''
+        if len(key_cmd_string_parts) > 0:
+            key_cmd_str = 'keys: ' + ', '.join(key_cmd_string_parts) + ', '
 
-    def _print_logs(self, errors: list[str]) -> None:
-        for log_line in self._iter_log_lines(errors):
-            print(log_line)
+        mouse_cmd_string_parts = list(self._iter_mouse_button_cmd_strings(reaction_commands))
+        mouse_cmd_str = ''
+        if len(mouse_cmd_string_parts) > 0:
+            mouse_cmd_str = 'mouse: ' + ', '.join(mouse_cmd_string_parts)
 
-    def _iter_log_lines(self, errors: list[str]) -> Iterator[str]:
-        for log_item in self._log_items:
-            yield f'{log_item.time}: events={log_item.vkey_events}, reactions={log_item.reaction_commands}'
+        reaction_str = key_cmd_str + mouse_cmd_str
 
-        for err_text in errors:
-            yield f'ERR: {err_text}'
+        yield f'{t / 1000:.3f}: {events_str} => {reaction_str}'
 
     @staticmethod
-    def _exists_dir(path: str) -> bool:
-        try:
-            return (os.stat(path)[0] & 0x4000) != 0
-        except OSError:
-            return False
+    def _iter_key_cmd_strings(reaction_commands: list[ReactionCmd]) -> Iterator[str]:
+        for cmd in reaction_commands:
+            if isinstance(cmd, KeyCmd):
+                if cmd.kind == KeyCmdKind.KEY_PRESS:
+                    yield f'+{cmd.key_code}'
+                elif cmd.kind == KeyCmdKind.KEY_RELEASE:
+                    yield f'-{cmd.key_code}'
+                elif cmd.kind == KeyCmdKind.KEY_SEND:
+                    yield f'+-{cmd.key_code}'
+                else:
+                    yield f'?{cmd.key_code}'
+
+    @staticmethod
+    def _iter_mouse_button_cmd_strings(reaction_commands: list[ReactionCmd]) -> Iterator[str]:
+        for cmd in reaction_commands:
+            if isinstance(cmd, MouseButtonCmd):
+                if cmd.kind == MouseButtonCmdKind.MOUSE_PRESS:
+                    yield f'+{cmd.button_no}'
+                elif cmd.kind == MouseButtonCmdKind.MOUSE_RELEASE:
+                    yield f'-{cmd.button_no}'
+                elif cmd.kind == MouseButtonCmdKind.MOUSE_CLICK:
+                    yield f'+-{cmd.button_no}'
+                else:
+                    yield f'?{cmd.button_no}'

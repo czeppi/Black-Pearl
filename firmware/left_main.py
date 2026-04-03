@@ -41,7 +41,7 @@ from both_uart import UartBase
 LEFT_TX = None  # board.GP0
 LEFT_RX = board.GP1
 
-WITH_PRINT = True
+WITH_PRINT = False
 
 
 def main():

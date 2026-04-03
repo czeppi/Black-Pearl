@@ -65,9 +65,9 @@ class VKeyPressEvent:
 
     def __str__(self):
         if self.pressed:
-            return f'vkey-{self.vkey_serial}-pressed'
+            return f'+{self.vkey_serial}'
         else:
-            return f'vkey-{self.vkey_serial}-release'
+            return f'-{self.vkey_serial}'
 
     def __repr__(self):
         return str(self)
