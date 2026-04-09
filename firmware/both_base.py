@@ -2,6 +2,7 @@ from __future__ import annotations
 
 PhysicalKeySerial = int  # p.e. LEFT_PINKY_DOWN
 VirtualKeySerial = int  # p.e. LPD
+LayerID = int
 
 TimeInMs = float
 KeyCode = int  # 0 - 255

@@ -1,6 +1,6 @@
-from both_base import KeyCode, VirtualKeySerial
+from both_base import KeyCode, VirtualKeySerial, LayerID
 from both_keysdata import NO_KEY
-from left_virtualkeyboard import SimpleKey, ModKey, LayerKey, VirtualKeyboard
+from left_virtualkeyboard import SimpleKey, ModKey, LayerKey, VirtualKeyboard, Layer
 from left_reactions import KeyCmdKind, KeyCmd, OneKeyReactions, MouseButtonCmd, MouseWheelCmd, MouseButtonCmdKind, LogCmd
 
 try:
@@ -151,7 +151,7 @@ class KeyboardCreator:
 
     def __init__(self, virtual_key_order: list[list[VirtualKeySerial]],
                  layers: dict[VirtualKeySerial, list[ReactionName]],
-                 modifiers: dict[VirtualKeySerial, ModKeyName],
+                 modifiers: dict[VirtualKeySerial, tuple[ModKeyName, VirtualKeySerial, ...]],
                  macros: dict[MacroName, MacroDescription],
                  layer_keys_without_modifiers: Optional[set[VirtualKeySerial]] = None
                  ):
@@ -174,8 +174,9 @@ class KeyboardCreator:
 
         simple_keys = [self._create_simple_key(vkey_serial)
                        for vkey_serial in simple_key_serials]
-        mod_keys = [self._create_mod_key(vkey_serial, mod_key_name)
-                    for vkey_serial, mod_key_name in self._modifiers.items()]
+        mod_keys = [self._create_mod_key(vkey_serial, mod_key_name=mod_key_data[0],
+                                         enabled_layer_ids=set[mod_key_data[1:]])
+                    for vkey_serial, mod_key_data in self._modifiers.items()]
         layer_keys = [self._create_layer_key(vkey_serial, lines,
                                              with_modifiers=vkey_serial not in self._layer_keys_without_modifiers)
                       for vkey_serial, lines in self._layers.items() if vkey_serial != NO_KEY]
@@ -184,7 +185,7 @@ class KeyboardCreator:
             simple_keys=simple_keys,
             mod_keys= mod_keys,
             layer_keys=layer_keys,
-            default_layer=dict(self._create_layer(self._layers[NO_KEY])),
+            default_layer=Layer(layer_id=0, key_mapping=dict(self._iter_key_mapping(self._layers[NO_KEY]))),
         )
 
     def create_key_code_map(self) -> dict[KeyCode, str]:
@@ -236,18 +237,22 @@ class KeyboardCreator:
     def _create_simple_key(vkey_serial: VirtualKeySerial) -> SimpleKey:
         return SimpleKey(vkey_serial)
 
-    def _create_mod_key(self, vkey_serial: VirtualKeySerial, mod_key_name: ModKeyName) -> ModKey:
+    def _create_mod_key(self, vkey_serial: VirtualKeySerial, mod_key_name: ModKeyName,
+                        enabled_layer_ids: set[VirtualKeySerial]) -> ModKey:
         mod_key_code = self._MOD_KEY_CODE_MAP[mod_key_name]
 
-        return ModKey(vkey_serial, mod_key_code=mod_key_code)
+        return ModKey(vkey_serial, mod_key_code=mod_key_code, enabled_layer_ids=enabled_layer_ids)
 
     def _create_layer_key(self, vkey_serial: VirtualKeySerial, lines: list[str],
                           with_modifiers: bool) -> LayerKey:
-        layer = dict(self._create_layer(lines))
-
+        layer_id = LayerID(vkey_serial)
+        layer = Layer(
+            layer_id=layer_id,
+            key_mapping=dict(self._iter_key_mapping(lines))
+        )
         return LayerKey(vkey_serial, layer=layer, with_modifiers=with_modifiers)
 
-    def _create_layer(self, lines: list[str]) -> Iterator[tuple[VirtualKeySerial, OneKeyReactions]]:
+    def _iter_key_mapping(self, lines: list[str]) -> Iterator[tuple[VirtualKeySerial, OneKeyReactions]]:
         assert len(lines) == len(self._virtual_key_order)
 
         for line, key_order_in_row in zip(lines, self._virtual_key_order):

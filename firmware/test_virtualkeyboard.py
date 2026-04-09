@@ -8,9 +8,9 @@ from both_keyboardhalf import VKeyPressEvent, KeyGroup, \
 from left_logging import EventLogger
 from left_virtualkeyboard import SimpleKey, TapHoldKey, ModKey, \
     VirtualKeyboard, Layer, LayerKey
-from both_kbdlayoutdata import VIRTUAL_KEY_ORDER, LAYERS, MODIFIERS
+from both_kbdlayoutdata import VIRTUAL_KEY_ORDER, LAYERS, MODIFIERS, LAYERS_WITHOUT_MODIFIERS
 from left_reactions import KeyCmdKind, KeyCmd, ReactionCommands, OneKeyReactions
-from both_keysdata import RIGHT_THUMB_DOWN, RIGHT_THUMB_UP, RTU, RTM, RTD, NO_KEY, RI1U, LRU
+from both_keysdata import RIGHT_THUMB_DOWN, RIGHT_THUMB_UP, RTU, RTM, RTD, NO_KEY, RI1U, LRU, LTU, RPU
 
 VKEY_A = 1
 VKEY_B = 2
@@ -69,12 +69,17 @@ class VirtualKeyboardTestBase(unittest.TestCase):
 class TapKeyTest(VirtualKeyboardTestBase):
 
     def _create_virtual_keyboard(self) -> VirtualKeyboard:
-        default_layer: Layer = {
-            VKEY_A: self._create_key_assignment(KC.A),
-            VKEY_B: self._create_key_assignment(KC.B),
-        }
+        default_layer_id = 0
+        default_layer = Layer(
+            layer_id=default_layer_id,
+            key_mapping={
+                VKEY_A: self._create_key_assignment(KC.A),
+                VKEY_B: self._create_key_assignment(KC.B),
+            }
+        )
         return VirtualKeyboard(simple_keys=[SimpleKey(serial=VKEY_B)],
-                               mod_keys=[ModKey(serial=VKEY_A, mod_key_code=KC.LEFT_SHIFT)],
+                               mod_keys=[ModKey(serial=VKEY_A, mod_key_code=KC.LEFT_SHIFT,
+                                                enabled_layer_ids={default_layer_id})],
                                layer_keys=[],
                                default_layer=default_layer)
 
@@ -221,14 +226,20 @@ class SimpleLayerTest(VirtualKeyboardTestBase):
         self._event_logger = EventLogger()
 
     def _create_virtual_keyboard(self) -> VirtualKeyboard:
-        default_layer: Layer = {
-            VKEY_A: self._create_key_assignment(KC.A),
-            VKEY_B: self._create_key_assignment(KC.B),
-        }
-        layer1: Layer = {
-            VKEY_A: default_layer[VKEY_A],
-            VKEY_B: self._create_key_assignment(KC.C),
-        }
+        default_layer = Layer(
+            layer_id=0,
+            key_mapping={
+                VKEY_A: self._create_key_assignment(KC.A),
+                VKEY_B: self._create_key_assignment(KC.B),
+            }
+        )
+        layer1 = Layer(
+            layer_id=1,
+            key_mapping={
+                VKEY_A: default_layer.key_mapping[VKEY_A],
+                VKEY_B: self._create_key_assignment(KC.C),
+            }
+        )
         return VirtualKeyboard(simple_keys=[SimpleKey(serial=VKEY_B)],
                                mod_keys=[],
                                layer_keys=[LayerKey(serial=VKEY_A, layer=layer1)],
@@ -358,6 +369,7 @@ class RealVKeyboardTest(unittest.TestCase):
                                   layers=LAYERS,
                                   modifiers=MODIFIERS,
                                   macros=MACROS,
+                                  layer_keys_without_modifiers=LAYERS_WITHOUT_MODIFIERS
                                   )
         self._virt_keyboard = creator.create()
 
@@ -393,6 +405,95 @@ class RealVKeyboardTest(unittest.TestCase):
         self._step(143, [VKeyPressEvent(LRU, pressed=False)], expected_reactions=[press_shift, press_w, release_w])
         self._step(219, [], expected_reactions=[])
         self._step(249, [VKeyPressEvent(RI1U, pressed=False)], expected_reactions=[release_shift])
+
+    def test_ue(self):
+        press_p = KeyCmd(KeyCmdKind.KEY_PRESS, KC.P)
+        release_p = KeyCmd(KeyCmdKind.KEY_RELEASE, KC.P)
+        press_ue = KeyCmd(KeyCmdKind.KEY_PRESS, KC.LEFT_BRACKET)
+        release_ue = KeyCmd(KeyCmdKind.KEY_RELEASE, KC.LEFT_BRACKET)
+
+        self._step(831, [VKeyPressEvent(LTU, pressed=True)], expected_reactions=[])
+        self._step(982, [VKeyPressEvent(RPU, pressed=True), VKeyPressEvent(RPU, pressed=False)],
+                   expected_reactions=[press_ue, release_ue])
+        self._step(2690, [VKeyPressEvent(LTU, pressed=False)], expected_reactions=[])
+
+        # 6=LTU, 12=RPU, 19=p, 47=ü
+        # #831: +6 = >
+        #982: +12, -12 = > keys: +19, -19,
+        #1671: +12, -12 = > keys: +47, -47,
+        #1875: +12, -12 = > keys: +47, -47,
+        #2462: +12, -12 = > keys: +47, -47,
+        #2690: -6 = >
+
+    def test_lgui(self):
+        """
+        uart read key event: 12 True   # 12 -> RPU
+        160111.250: +12 =>
+
+        uart read key event: 12 False
+        160111.938:  => keys: +227,  # 227 -> KC.LEFT_GUI
+
+        uart read key event: 12 True
+        160112.375: +12 => keys: +47,  # 47 -> KC.LEFT_BRACKET
+        ERR: vkey 12 already pressed   => ???
+
+        uart read key event: 12 False
+        160112.438: -12 => keys: -47,
+
+        uart read key event: 12 True
+        160112.563: +12 => keys: +47,
+
+        uart read key event: 12 False
+        160112.625: -12 => keys: -47,
+        160114.125: -6 =>
+        ERR: no pressed vkeys but pressed key codes {227}
+
+
+        """
+        #press_ue = KeyCmd(KeyCmdKind.KEY_PRESS, KC.LEFT_BRACKET)
+        #release_ue = KeyCmd(KeyCmdKind.KEY_RELEASE, KC.LEFT_BRACKET)
+        press_lgui = KeyCmd(KeyCmdKind.KEY_PRESS, KC.LEFT_GUI)
+        release_lgui = KeyCmd(KeyCmdKind.KEY_RELEASE, KC.LEFT_GUI)
+        #KC.LEFT_GUI=227
+
+        self._step(0, [VKeyPressEvent(RPU, pressed=True)], expected_reactions=[])
+        self._step(300, [], expected_reactions=[press_lgui])
+        self._step(500, [VKeyPressEvent(RPU, pressed=False)], expected_reactions=[release_lgui])
+
+    def test_lgui2(self):
+        press_lgui = KeyCmd(KeyCmdKind.KEY_PRESS, KC.LEFT_GUI)
+        release_lgui = KeyCmd(KeyCmdKind.KEY_RELEASE, KC.LEFT_GUI)
+        self._step(0, [VKeyPressEvent(RPU, pressed=True)], expected_reactions=[])
+        self._step(300, [VKeyPressEvent(RPU, pressed=False)], expected_reactions=[press_lgui, release_lgui])
+        self._step(700, [VKeyPressEvent(RPU, pressed=True)], expected_reactions=[])
+
+    def test_lgui3(self):
+        press_lgui = KeyCmd(KeyCmdKind.KEY_PRESS, KC.LEFT_GUI)
+        release_lgui = KeyCmd(KeyCmdKind.KEY_RELEASE, KC.LEFT_GUI)
+        self._step(0, [VKeyPressEvent(RPU, pressed=True)], expected_reactions=[])
+        self._step(300, [VKeyPressEvent(RPU, pressed=False)], expected_reactions=[press_lgui, release_lgui])
+
+    def test_lgui4(self):
+        """
+        266.782: +6 =>    # 6 -> LTU
+
+        uart read key event: 12 True   # 12 -> RPU
+        267.432: +12 => keys: +47,
+
+        267.947: -6 =>
+
+        uart read key event: 12 False
+        268.209: -12 => keys: -227,
+        ERR: release unpressed key code 227
+        ERR: no pressed vkeys but pressed key codes {47}
+        """
+        press_ue = KeyCmd(KeyCmdKind.KEY_PRESS, KC.LEFT_BRACKET)
+        release_ue = KeyCmd(KeyCmdKind.KEY_RELEASE, KC.LEFT_BRACKET)
+
+        self._step(  0, [VKeyPressEvent(LTU, pressed=True)], expected_reactions=[])
+        self._step(300, [VKeyPressEvent(RPU, pressed=True)], expected_reactions=[press_ue])
+        self._step(600, [VKeyPressEvent(LTU, pressed=False)], expected_reactions=[])
+        self._step(900, [VKeyPressEvent(RPU, pressed=False)], expected_reactions=[release_ue])
 
     def _step(self, time: TimeInMs, vkey_events: list[VKeyPressEvent], expected_reactions: list[KeyCmd]):
         actual_reactions = list(

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from both_base import TimeInMs, KeyCode, VirtualKeySerial
+from dataclasses import field
+
+from both_base import TimeInMs, KeyCode, VirtualKeySerial, LayerID
 from both_keyboardhalf import VKeyPressEvent
 from left_reactions import KeyCmdKind, KeyCmd, OneKeyReactions, ReactionCmd, ReactionCommands
 
@@ -10,7 +12,11 @@ except ImportError:
     pass
 
 
-Layer = dict  # dict[VirtualKeySerial, OneKeyReactions]
+class Layer:
+
+    def __init__(self, layer_id: LayerID, key_mapping: dict):  # dict[VirtualKeySerial, OneKeyReactions]
+        self.id = layer_id
+        self.key_mapping = key_mapping
 
 
 class VirtualKey:
@@ -20,11 +26,17 @@ class VirtualKey:
         self.serial = serial
         self.last_press_time: TimeInMs = -1
 
+    def is_tap_hold(self, cur_layer_id: LayerID) -> bool:
+        raise NotImplementedError()
+
 
 class SimpleKey(VirtualKey):
 
     def __init__(self, serial: VirtualKeySerial):
         super().__init__(serial=serial)
+
+    def is_tap_hold(self, cur_layer_id: LayerID) -> bool:
+        return False
 
 
 class TapHoldKey(VirtualKey):
@@ -36,13 +48,17 @@ class TapHoldKey(VirtualKey):
 
 class ModKey(TapHoldKey):
 
-    def __init__(self, serial: VirtualKeySerial, mod_key_code: KeyCode):
+    def __init__(self, serial: VirtualKeySerial, mod_key_code: KeyCode, enabled_layer_ids: set[LayerID]):
         super().__init__(serial=serial)
         self._mod_key_code = mod_key_code
+        self._enabled_layer_ids = enabled_layer_ids
 
     @property
     def mod_key_code(self) -> KeyCode:
         return self._mod_key_code
+
+    def is_tap_hold(self, cur_layer_id: LayerID) -> bool:
+        return cur_layer_id in self._enabled_layer_ids
 
 
 class LayerKey(TapHoldKey):
@@ -55,12 +71,72 @@ class LayerKey(TapHoldKey):
         self.layer = layer
         self.with_modifiers = with_modifiers
 
+    def is_tap_hold(self, cur_layer_id: LayerID) -> bool:
+        return True
+
 
 class PressedKeyInfo:
 
     def __init__(self, key_reactions: OneKeyReactions, with_modifiers: bool):
         self.key_reactions=key_reactions
         self.with_modifiers=with_modifiers
+
+
+class UndecidedTapHoldKeys:
+    """ manage undecided tap hold keys
+
+    hold: if the tap/hold key is pressed for some times (typically 200ms)
+          or a simple key is pressed + released, while the tap/hold is pressed
+    tap: if the tap/hold key is pressed only very short (typically <200ms)
+
+    => press of simple keys must be deferred, while a tap/hold key is pressed
+    """
+
+    def __init__(self):
+        self._tap_hold_key_map: dict[VirtualKeySerial, list[SimpleKey | ModKey]] = {}
+        #self._deferred_simple_keys: list[SimpleKey] = field(default_factory=list)
+        self._tap_hold_key_list: list[TapHoldKey] = []  # sort by press time
+
+    def _check_invariants(self) -> None:
+        assert set(self._tap_hold_key_map.keys()) == {tap_hold_key.serial for tap_hold_key in self._tap_hold_key_list}
+
+    def add_tap_hold_key(self, tap_hold_key: TapHoldKey) -> None:
+        if tap_hold_key.serial in self._tap_hold_key_map:
+            return
+
+        self._tap_hold_key_map[tap_hold_key.serial] = []
+        self._tap_hold_key_list.append(tap_hold_key)
+
+    def add_simple_key(self, simple_key: SimpleKey | ModKey) -> None:
+        """ add to the last pressed tap_hold_key, if any exists
+        """
+        if len(self._tap_hold_key_list) == 0:
+            return
+
+        last_tap_hold_key = self._tap_hold_key_list[-1]
+        self._tap_hold_key_map[last_tap_hold_key.serial].append(simple_key)
+
+    def remove_tap_hold_key(self, tap_hold_key: TapHoldKey) -> None:
+        if tap_hold_key.serial in self._tap_hold_key_map:
+            del self._tap_hold_key_map[tap_hold_key.serial]
+            i = self._tap_hold_key_list.index(tap_hold_key)
+            del self._tap_hold_key_list[i]
+
+    def remove_simple_key(self, simple_key: SimpleKey | ModKey) -> None:
+        ...
+
+    def do_exists_undecided_tap_hold_keys(self) -> bool:
+        return len(self._tap_hold_key_list) > 0
+
+    def iter_tap_hold_keys_for_simple_key(self, simple_key: SimpleKey | ModKey) -> Iterator[TapHoldKey]:
+        """ all tap_hold_keys which can be decided by the simple key
+        """
+        ...
+
+    def iter_simple_keys_for_tap_hold_key(self, tap_hold_key: TapHoldKey) -> Iterator[SimpleKey | ModKey]:
+        """ all simple keys, which wait for decision of the given tap_hold_key
+        """
+        yield from self._tap_hold_key_map.get(tap_hold_key.serial, [])
 
 
 class VirtualKeyboard:
@@ -119,8 +195,11 @@ class VirtualKeyboard:
 
             for simple_key in self._deferred_simple_keys:
                 if simple_key.last_press_time > oldest_tap_hold_key_press_time:
-                    one_key_reactions = self._pressed_keys_info[simple_key.serial].key_reactions
+                    one_key_reactions = self._cur_layer.key_mapping.get(simple_key.serial)
                     if one_key_reactions:
+                        self._pressed_keys_info[simple_key.serial] \
+                            = PressedKeyInfo(with_modifiers=self._modifiers_enabled,
+                                             key_reactions=one_key_reactions)
                         yield from one_key_reactions.on_press_key_reaction_commands
                     simple_keys_to_remove.append(simple_key)
 
@@ -130,10 +209,6 @@ class VirtualKeyboard:
     def _update_vkey_event(self, time: TimeInMs, vkey_event: VKeyPressEvent) -> Iterator[ReactionCmd]:
         vkey_serial = vkey_event.vkey_serial
         vkey = self._all_keys[vkey_serial]
-
-        if vkey_event.pressed:
-            self._pressed_keys_info[vkey_serial] = PressedKeyInfo(with_modifiers=self._modifiers_enabled,
-                                                                  key_reactions=self._cur_layer.get(vkey_serial))
 
         if self._is_tap_hold_key(vkey):
             if vkey_event.pressed:
@@ -149,7 +224,7 @@ class VirtualKeyboard:
             else:
                 yield from self._on_end_press_simple_key(vkey)
 
-        if not vkey_event.pressed:
+        if not vkey_event.pressed and vkey_serial in self._pressed_keys_info:
             del self._pressed_keys_info[vkey_serial]
 
     def _is_tap_hold_key(self, vkey: VirtualKey) -> bool:
@@ -189,7 +264,7 @@ class VirtualKeyboard:
                 self._undecided_tap_hold_keys.remove(tap_hold_key2)
 
             # tap/hold: tap (press + release)
-            one_key_reactions = self._pressed_keys_info[tap_hold_key.serial].key_reactions
+            one_key_reactions = self._cur_layer.key_mapping.get(tap_hold_key.serial)
             if one_key_reactions:
                 yield from one_key_reactions.on_press_key_reaction_commands
                 yield from one_key_reactions.on_release_key_reaction_commands
@@ -205,8 +280,12 @@ class VirtualKeyboard:
                 for simple_key in self._deferred_simple_keys:
                     if simple_key.last_press_time > oldest_tap_hold_key_press_time:
                         # simple: -> press
-                        one_key_reactions = self._pressed_keys_info[simple_key.serial].key_reactions
+
+                        one_key_reactions = self._cur_layer.key_mapping.get(simple_key.serial)
                         if one_key_reactions:
+                            self._pressed_keys_info[simple_key.serial] \
+                                = PressedKeyInfo(with_modifiers=self._modifiers_enabled,
+                                                 key_reactions=one_key_reactions)
                             yield from one_key_reactions.on_press_key_reaction_commands
                         simple_keys_to_remove.append(simple_key)
 
@@ -226,8 +305,11 @@ class VirtualKeyboard:
             self._deferred_simple_keys.append(simple_key)
         else:
             # simple: -> press
-            one_key_reactions = self._pressed_keys_info[simple_key.serial].key_reactions
+            one_key_reactions = self._cur_layer.key_mapping.get(simple_key.serial)
             if one_key_reactions:
+                self._pressed_keys_info[simple_key.serial] \
+                    = PressedKeyInfo(with_modifiers=self._modifiers_enabled,
+                                     key_reactions=one_key_reactions)
                 yield from one_key_reactions.on_press_key_reaction_commands
 
     def _on_end_press_simple_key(self, simple_key: SimpleKey) -> Iterator[ReactionCmd]:
@@ -260,8 +342,11 @@ class VirtualKeyboard:
 
                 if simple_key2.last_press_time > oldest_tap_hold_key_press_time:
                     # simple: -> press
-                    one_key_reactions = self._pressed_keys_info[simple_key2.serial].key_reactions
+                    one_key_reactions = self._cur_layer.key_mapping.get(simple_key2.serial)
                     if one_key_reactions:
+                        self._pressed_keys_info[simple_key2.serial] \
+                            = PressedKeyInfo(with_modifiers=self._modifiers_enabled,
+                                             key_reactions=one_key_reactions)
                         yield from one_key_reactions.on_press_key_reaction_commands
                     simple_keys_to_remove.append(simple_key2)
 
@@ -269,10 +354,9 @@ class VirtualKeyboard:
                 self._deferred_simple_keys.remove(simple_key2)
 
         # this (simple) key:
-        one_key_reactions = self._pressed_keys_info[simple_key.serial].key_reactions
-
         if simple_key in self._deferred_simple_keys:
             # simple: deferred -> press + release
+            one_key_reactions = self._cur_layer.key_mapping.get(simple_key.serial)
             if one_key_reactions:
                 yield from one_key_reactions.on_press_key_reaction_commands
                 yield from one_key_reactions.on_release_key_reaction_commands
@@ -280,6 +364,7 @@ class VirtualKeyboard:
             self._deferred_simple_keys.remove(simple_key)
         else:
             # simple: pressed -> release
+            one_key_reactions = self._pressed_keys_info[simple_key.serial].key_reactions
             if one_key_reactions:
                 yield from one_key_reactions.on_release_key_reaction_commands
 
