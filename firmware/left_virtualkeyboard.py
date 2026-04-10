@@ -45,10 +45,9 @@ class TapHoldKey(VirtualKey):
 
 class ModKey(TapHoldKey):
 
-    def __init__(self, serial: VirtualKeySerial, mod_key_code: KeyCode, enabled_layer_ids: set[LayerID]):
+    def __init__(self, serial: VirtualKeySerial, mod_key_code: KeyCode):
         super().__init__(serial=serial)
         self._mod_key_code = mod_key_code
-        self._enabled_layer_ids = enabled_layer_ids
 
     @property
     def mod_key_code(self) -> KeyCode:
@@ -57,7 +56,6 @@ class ModKey(TapHoldKey):
     def exist_hold_variant(self, cur_layer: Layer) -> bool:
         one_key_reaction = cur_layer.key_mapping[self.serial]
         return 'mouse' not in one_key_reaction.reaction_name.lower()  # mouse button keys have no hold-variant
-        #return cur_layer_id in self._enabled_layer_ids
 
 
 class LayerKey(TapHoldKey):

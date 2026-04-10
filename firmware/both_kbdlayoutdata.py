@@ -149,17 +149,12 @@ LAYERS = {
 
 
 MODIFIERS = {
-    LI1U: ('LShift', NO_KEY, LTD, LTM, RTM, RTD),
-    LMU:  ('LCtrl',  NO_KEY, LTD, LTM, RTM, RTD),
-    LRU:  ('LAlt',   NO_KEY, LTD, LTM, RTM, RTD),
-    LPU:  ('LGui',   NO_KEY, LTD, LTM, RTM, RTD),
-    RI1U: ('LShift', NO_KEY, LTM, RTD),
-    RMU:  ('LCtrl',  NO_KEY, LTM, RTD),
-    RRU:  ('LAlt',   NO_KEY, LTM, RTD),
-    RPU:  ('LGui',   NO_KEY, LTM, RTD),
-}
-
-
-LAYERS_WITHOUT_MODIFIERS = {
-    LTU,
+    LI1U: 'LShift',
+    LMU:  'LCtrl',
+    LRU:  'LAlt',
+    LPU:  'LGui',
+    RI1U: 'LShift',
+    RMU:  'LCtrl',
+    RRU:  'LAlt',
+    RPU:  'LGui',
 }

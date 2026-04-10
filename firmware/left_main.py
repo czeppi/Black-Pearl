@@ -21,7 +21,7 @@ from adafruit_hid.mouse import Mouse
 
 from both_base import PhysicalKeySerial, TimeInMs
 from both_button import Button
-from both_kbdlayoutdata import LEFT_KEY_GROUPS, VIRTUAL_KEY_ORDER, LAYERS, MODIFIERS, LAYERS_WITHOUT_MODIFIERS
+from both_kbdlayoutdata import LEFT_KEY_GROUPS, VIRTUAL_KEY_ORDER, LAYERS, MODIFIERS
 from left_macroslib import read_macros
 from both_keyboardhalf import KeyboardHalf, KeyGroup, VKeyPressEvent
 from both_keysdata import *
@@ -140,9 +140,7 @@ class LeftKeyboardSide:
         creator = KeyboardCreator(virtual_key_order=VIRTUAL_KEY_ORDER,
                                   layers=LAYERS,
                                   modifiers=MODIFIERS,
-                                  macros=macros,
-                                  layer_keys_without_modifiers=LAYERS_WITHOUT_MODIFIERS
-                                  )
+                                  macros=macros)
         self._virt_keyboard = creator.create()
         self._reaction_map = creator.create_reaction_map()
         self._key_code_map = creator.create_key_code_map()

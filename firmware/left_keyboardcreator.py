@@ -150,15 +150,13 @@ class KeyboardCreator:
 
     def __init__(self, virtual_key_order: list[list[VirtualKeySerial]],
                  layers: dict[VirtualKeySerial, list[ReactionName]],
-                 modifiers: dict[VirtualKeySerial, tuple[ModKeyName, VirtualKeySerial, ...]],
+                 modifiers: dict[VirtualKeySerial, ModKeyName],
                  macros: dict[MacroName, MacroDescription],
-                 layer_keys_without_modifiers: Optional[set[VirtualKeySerial]] = None
                  ):
         self._virtual_key_order = virtual_key_order
         self._layers = layers
         self._modifiers = modifiers
         self._macros = macros
-        self._layer_keys_without_modifiers = layer_keys_without_modifiers if layer_keys_without_modifiers else set()
 
         self._reaction_map: dict[ReactionName, _KeyReactionData] = {}
 
@@ -173,9 +171,8 @@ class KeyboardCreator:
 
         simple_keys = [self._create_simple_key(vkey_serial)
                        for vkey_serial in simple_key_serials]
-        mod_keys = [self._create_mod_key(vkey_serial, mod_key_name=mod_key_data[0],
-                                         enabled_layer_ids=set(mod_key_data[1:]))
-                    for vkey_serial, mod_key_data in self._modifiers.items()]
+        mod_keys = [self._create_mod_key(vkey_serial, mod_key_name=mod_key_name)
+                    for vkey_serial, mod_key_name in self._modifiers.items()]
         layer_keys = [self._create_layer_key(vkey_serial, lines)
                       for vkey_serial, lines in self._layers.items() if vkey_serial != NO_KEY]
 
@@ -235,11 +232,10 @@ class KeyboardCreator:
     def _create_simple_key(vkey_serial: VirtualKeySerial) -> SimpleKey:
         return SimpleKey(vkey_serial)
 
-    def _create_mod_key(self, vkey_serial: VirtualKeySerial, mod_key_name: ModKeyName,
-                        enabled_layer_ids: set[VirtualKeySerial]) -> ModKey:
+    def _create_mod_key(self, vkey_serial: VirtualKeySerial, mod_key_name: ModKeyName) -> ModKey:
         mod_key_code = self._MOD_KEY_CODE_MAP[mod_key_name]
 
-        return ModKey(vkey_serial, mod_key_code=mod_key_code, enabled_layer_ids=enabled_layer_ids)
+        return ModKey(vkey_serial, mod_key_code=mod_key_code)
 
     def _create_layer_key(self, vkey_serial: VirtualKeySerial, lines: list[str]) -> LayerKey:
         layer_id = LayerID(vkey_serial)

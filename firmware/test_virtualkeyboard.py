@@ -8,7 +8,7 @@ from both_keyboardhalf import VKeyPressEvent, KeyGroup, \
 from left_logging import EventLogger
 from left_virtualkeyboard import SimpleKey, TapHoldKey, ModKey, \
     VirtualKeyboard, Layer, LayerKey
-from both_kbdlayoutdata import VIRTUAL_KEY_ORDER, LAYERS, MODIFIERS, LAYERS_WITHOUT_MODIFIERS
+from both_kbdlayoutdata import VIRTUAL_KEY_ORDER, LAYERS, MODIFIERS
 from left_reactions import KeyCmdKind, KeyCmd, ReactionCommands, OneKeyReactions
 from both_keysdata import RIGHT_THUMB_DOWN, RIGHT_THUMB_UP, RTU, RTM, RTD, NO_KEY, RI1U, LRU, LTU, RPU
 
@@ -79,8 +79,7 @@ class TapKeyTest(VirtualKeyboardTestBase):
             }
         )
         return VirtualKeyboard(simple_keys=[SimpleKey(serial=VKEY_B)],
-                               mod_keys=[ModKey(serial=VKEY_A, mod_key_code=KC.LEFT_SHIFT,
-                                                enabled_layer_ids={default_layer_id})],
+                               mod_keys=[ModKey(serial=VKEY_A, mod_key_code=KC.LEFT_SHIFT)],
                                layer_keys=[],
                                default_layer=default_layer)
 
@@ -369,9 +368,7 @@ class RealVKeyboardTest(unittest.TestCase):
         creator = KeyboardCreator(virtual_key_order=VIRTUAL_KEY_ORDER,
                                   layers=LAYERS,
                                   modifiers=MODIFIERS,
-                                  macros=MACROS,
-                                  layer_keys_without_modifiers=LAYERS_WITHOUT_MODIFIERS
-                                  )
+                                  macros=MACROS)
         self._virt_keyboard = creator.create()
 
     def test_W_correct(self):
