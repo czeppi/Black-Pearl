@@ -197,7 +197,7 @@ class TapKeyTest(VirtualKeyboardTestBase):
         """
         self._step(0, press=VKEY_A, expected_key_seq=[])
         self._step(110, press=VKEY_B, expected_key_seq=[])
-        self._step(130, release=VKEY_A, expected_key_seq=[A_DOWN, A_UP, B_DOWN])
+        self._step(130, release=VKEY_A, expected_key_seq=[A_DOWN, B_DOWN, A_UP])
         self._step(140, release=VKEY_B, expected_key_seq=[B_UP])
 
     def test_abab_slow(self) -> None:

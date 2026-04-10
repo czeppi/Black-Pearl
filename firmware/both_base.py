@@ -6,5 +6,5 @@ LayerID = int
 
 TimeInMs = float
 KeyCode = int  # 0 - 255
-KeyName = str  # in layer desription in both_kbdlayoutdata.py (must be unique)
+KeyName = str  # in layer description in both_kbdlayoutdata.py (must be unique)
 

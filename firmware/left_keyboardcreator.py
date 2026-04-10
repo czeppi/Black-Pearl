@@ -175,10 +175,9 @@ class KeyboardCreator:
         simple_keys = [self._create_simple_key(vkey_serial)
                        for vkey_serial in simple_key_serials]
         mod_keys = [self._create_mod_key(vkey_serial, mod_key_name=mod_key_data[0],
-                                         enabled_layer_ids=set[mod_key_data[1:]])
+                                         enabled_layer_ids=set(mod_key_data[1:]))
                     for vkey_serial, mod_key_data in self._modifiers.items()]
-        layer_keys = [self._create_layer_key(vkey_serial, lines,
-                                             with_modifiers=vkey_serial not in self._layer_keys_without_modifiers)
+        layer_keys = [self._create_layer_key(vkey_serial, lines)
                       for vkey_serial, lines in self._layers.items() if vkey_serial != NO_KEY]
 
         return VirtualKeyboard(
@@ -243,14 +242,13 @@ class KeyboardCreator:
 
         return ModKey(vkey_serial, mod_key_code=mod_key_code, enabled_layer_ids=enabled_layer_ids)
 
-    def _create_layer_key(self, vkey_serial: VirtualKeySerial, lines: list[str],
-                          with_modifiers: bool) -> LayerKey:
+    def _create_layer_key(self, vkey_serial: VirtualKeySerial, lines: list[str]) -> LayerKey:
         layer_id = LayerID(vkey_serial)
         layer = Layer(
             layer_id=layer_id,
             key_mapping=dict(self._iter_key_mapping(lines))
         )
-        return LayerKey(vkey_serial, layer=layer, with_modifiers=with_modifiers)
+        return LayerKey(vkey_serial, layer=layer)
 
     def _iter_key_mapping(self, lines: list[str]) -> Iterator[tuple[VirtualKeySerial, OneKeyReactions]]:
         assert len(lines) == len(self._virtual_key_order)
