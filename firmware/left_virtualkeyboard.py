@@ -29,13 +29,13 @@ class VirtualKey:
         self.serial = serial
         self.last_real_press_time: TimeInMs = -1
 
-    def exist_hold_variant(self, cur_layer_id: LayerID) -> bool:
+    def exist_hold_variant(self, cur_layer: Layer) -> bool:
         raise NotImplementedError()
 
 
 class SimpleKey(VirtualKey):
 
-    def exist_hold_variant(self, cur_layer_id: LayerID) -> bool:
+    def exist_hold_variant(self, cur_layer: Layer) -> bool:
         return False
 
 
@@ -54,8 +54,10 @@ class ModKey(TapHoldKey):
     def mod_key_code(self) -> KeyCode:
         return self._mod_key_code
 
-    def exist_hold_variant(self, cur_layer_id: LayerID) -> bool:
-        return cur_layer_id in self._enabled_layer_ids
+    def exist_hold_variant(self, cur_layer: Layer) -> bool:
+        one_key_reaction = cur_layer.key_mapping[self.serial]
+        return 'mouse' not in one_key_reaction.reaction_name.lower()  # mouse button keys have no hold-variant
+        #return cur_layer_id in self._enabled_layer_ids
 
 
 class LayerKey(TapHoldKey):
@@ -66,7 +68,7 @@ class LayerKey(TapHoldKey):
         # public
         self.layer = layer
 
-    def exist_hold_variant(self, cur_layer_id: LayerID) -> bool:
+    def exist_hold_variant(self, cur_layer: Layer) -> bool:
         return True
 
 
@@ -120,7 +122,7 @@ class VirtualKeyboard:
 
     def _decide_deferred_key(self, deferred_key: VirtualKey, time: TimeInMs, release_key: VirtualKey | None
                              ) -> TapHoldDecision | None:
-        if not deferred_key.exist_hold_variant(self._cur_layer.id):
+        if not deferred_key.exist_hold_variant(self._cur_layer):
             return TapHoldDecision.TAP  # no hold variant
 
         if time - deferred_key.last_real_press_time >= TapHoldKey.TAP_HOLD_TERM:
@@ -149,7 +151,7 @@ class VirtualKeyboard:
 
     def _start_pressing(self, time: TimeInMs, vkey: VirtualKey) -> Iterator[ReactionCmd]:
         vkey.last_real_press_time = time
-        if len(self._deferred_keys) > 0 or vkey.exist_hold_variant(self._cur_layer.id):
+        if len(self._deferred_keys) > 0 or vkey.exist_hold_variant(self._cur_layer):
             self._deferred_keys.append(vkey)
         else:
             yield from self._start_tapping(vkey)

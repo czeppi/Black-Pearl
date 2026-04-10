@@ -47,7 +47,8 @@ class VirtualKeyboardTestBase(unittest.TestCase):
 
     @staticmethod
     def _create_key_assignment(keycode: KeyCode) -> OneKeyReactions:
-        return OneKeyReactions(on_press_key_reaction_commands=[KeyCmd(kind=KeyCmdKind.KEY_PRESS, key_code=keycode)],
+        return OneKeyReactions(reaction_name=f'{keycode}',
+                               on_press_key_reaction_commands=[KeyCmd(kind=KeyCmdKind.KEY_PRESS, key_code=keycode)],
                                on_release_key_reaction_commands=[KeyCmd(kind=KeyCmdKind.KEY_RELEASE, key_code=keycode)])
 
     def _step(self, time: TimeInMs, expected_key_seq: ReactionCommands,

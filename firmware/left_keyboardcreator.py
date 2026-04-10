@@ -1,7 +1,8 @@
 from both_base import KeyCode, VirtualKeySerial, LayerID
 from both_keysdata import NO_KEY
 from left_virtualkeyboard import SimpleKey, ModKey, LayerKey, VirtualKeyboard, Layer
-from left_reactions import KeyCmdKind, KeyCmd, OneKeyReactions, MouseButtonCmd, MouseWheelCmd, MouseButtonCmdKind, LogCmd
+from left_reactions import KeyCmdKind, KeyCmd, OneKeyReactions, MouseButtonCmd, MouseWheelCmd, MouseButtonCmdKind, \
+    LogCmd, ReactionName
 
 try:
     from typing import Callable, Iterator, Optional
@@ -14,8 +15,6 @@ from adafruit_hid.mouse import Mouse
 MacroName = str  # p.e. 'M3'
 MacroDescription = str
 ModKeyName = str  # p.e. 'LCtrl'
-ReactionName = str  # p.e. 'a', '$', 'M5'
-
 
 KEYCODES_DATA = [
     # function row on std keyboard
@@ -270,16 +269,18 @@ class KeyboardCreator:
 
         if reaction_name in self._macros:
             macro_desc = self._macros[reaction_name]
-            return self._create_macro_reaction(macro_desc)
+            return self._create_macro_reaction(reaction_name, macro_desc)
         elif reaction_name == 'MouseLeft':
             press_cmd = MouseButtonCmd(Mouse.LEFT_BUTTON, kind=MouseButtonCmdKind.MOUSE_PRESS)
             release_cmd = MouseButtonCmd(Mouse.LEFT_BUTTON, kind=MouseButtonCmdKind.MOUSE_RELEASE)
-            return OneKeyReactions(on_press_key_reaction_commands=[press_cmd],
+            return OneKeyReactions(reaction_name=reaction_name,
+                                   on_press_key_reaction_commands=[press_cmd],
                                    on_release_key_reaction_commands=[release_cmd])
         elif reaction_name == 'MouseRight':
             press_cmd = MouseButtonCmd(Mouse.RIGHT_BUTTON, kind=MouseButtonCmdKind.MOUSE_PRESS)
             release_cmd = MouseButtonCmd(Mouse.RIGHT_BUTTON, kind=MouseButtonCmdKind.MOUSE_RELEASE)
-            return OneKeyReactions(on_press_key_reaction_commands=[press_cmd],
+            return OneKeyReactions(reaction_name=reaction_name,
+                                   on_press_key_reaction_commands=[press_cmd],
                                    on_release_key_reaction_commands=[release_cmd])
         elif reaction_name == 'MouseShiftLeft':
             mouse_press_cmd = MouseButtonCmd(Mouse.LEFT_BUTTON, kind=MouseButtonCmdKind.MOUSE_PRESS)
@@ -288,7 +289,8 @@ class KeyboardCreator:
             shift_press_cmd = KeyCmd(kind=KeyCmdKind.KEY_PRESS, key_code=KC.LEFT_SHIFT)
             shift_release_cmd = KeyCmd(kind=KeyCmdKind.KEY_RELEASE, key_code=KC.LEFT_SHIFT)
 
-            return OneKeyReactions(on_press_key_reaction_commands=[shift_press_cmd, mouse_press_cmd],
+            return OneKeyReactions(reaction_name=reaction_name,
+                                   on_press_key_reaction_commands=[shift_press_cmd, mouse_press_cmd],
                                    on_release_key_reaction_commands=[mouse_release_cmd, shift_release_cmd])
         elif reaction_name == 'MouseCtrlLeft':
             mouse_press_cmd = MouseButtonCmd(Mouse.LEFT_BUTTON, kind=MouseButtonCmdKind.MOUSE_PRESS)
@@ -297,30 +299,32 @@ class KeyboardCreator:
             ctrl_press_cmd = KeyCmd(kind=KeyCmdKind.KEY_PRESS, key_code=KC.LEFT_CONTROL)
             ctrl_release_cmd = KeyCmd(kind=KeyCmdKind.KEY_RELEASE, key_code=KC.LEFT_CONTROL)
 
-            return OneKeyReactions(on_press_key_reaction_commands=[ctrl_press_cmd, mouse_press_cmd],
+            return OneKeyReactions(reaction_name=reaction_name,
+                                   on_press_key_reaction_commands=[ctrl_press_cmd, mouse_press_cmd],
                                    on_release_key_reaction_commands=[mouse_release_cmd, ctrl_release_cmd])
         elif reaction_name == 'MouseWheelUp':
             mouse_cmd = MouseWheelCmd(offset=1)
-            return OneKeyReactions(on_press_key_reaction_commands=[mouse_cmd],
+            return OneKeyReactions(reaction_name=reaction_name,
+                                   on_press_key_reaction_commands=[mouse_cmd],
                                    on_release_key_reaction_commands=[])
         elif reaction_name == 'MouseWheelDown':
             mouse_cmd = MouseWheelCmd(offset=-1)
-            return OneKeyReactions(on_press_key_reaction_commands=[mouse_cmd],
+            return OneKeyReactions(reaction_name=reaction_name,
+                                   on_press_key_reaction_commands=[mouse_cmd],
                                    on_release_key_reaction_commands=[])
         elif reaction_name == 'Log':
             log_cmd = LogCmd()
-            return OneKeyReactions(on_press_key_reaction_commands=[log_cmd],
+            return OneKeyReactions(reaction_name=reaction_name,
+                                   on_press_key_reaction_commands=[log_cmd],
                                    on_release_key_reaction_commands=[])
 
             reaction_data: _KeyReactionData = self._reaction_map['a']
             key_code = reaction_data.key_code
             cmd = KeyCmd(kind=KeyCmdKind.KEY_SEND, key_code=key_code)
 
-            return OneKeyReactions(on_press_key_reaction_commands=[cmd] * 100,
+            return OneKeyReactions(reaction_name=reaction_name,
+                                   on_press_key_reaction_commands=[cmd] * 100,
                                    on_release_key_reaction_commands=[])
-
-        if reaction_name not in self._reaction_map:
-            pass
 
         assert reaction_name in self._reaction_map
         reaction_data: _KeyReactionData = self._reaction_map[reaction_name]
@@ -331,20 +335,24 @@ class KeyboardCreator:
         if reaction_data.with_shift:
             shift_press_cmd = KeyCmd(kind=KeyCmdKind.KEY_PRESS, key_code=KC.LEFT_SHIFT)
             shift_release_cmd = KeyCmd(kind=KeyCmdKind.KEY_RELEASE, key_code=KC.LEFT_SHIFT)
-            return OneKeyReactions(on_press_key_reaction_commands=[shift_press_cmd, press_cmd],
+            return OneKeyReactions(reaction_name=reaction_name,
+                                   on_press_key_reaction_commands=[shift_press_cmd, press_cmd],
                                    on_release_key_reaction_commands=[release_cmd, shift_release_cmd])
         elif reaction_data.with_alt:
             alt_press_cmd = KeyCmd(kind=KeyCmdKind.KEY_PRESS, key_code=KC.RIGHT_ALT)
             alt_release_cmd = KeyCmd(kind=KeyCmdKind.KEY_RELEASE, key_code=KC.RIGHT_ALT)
-            return OneKeyReactions(on_press_key_reaction_commands=[alt_press_cmd, press_cmd],
+            return OneKeyReactions(reaction_name=reaction_name,
+                                   on_press_key_reaction_commands=[alt_press_cmd, press_cmd],
                                    on_release_key_reaction_commands=[release_cmd, alt_release_cmd])
         else:
-            return OneKeyReactions(on_press_key_reaction_commands=[press_cmd],
+            return OneKeyReactions(reaction_name=reaction_name,
+                                   on_press_key_reaction_commands=[press_cmd],
                                    on_release_key_reaction_commands=[release_cmd])
 
-    def _create_macro_reaction(self, macro_desc: MacroDescription) -> OneKeyReactions:
+    def _create_macro_reaction(self, reaction_name: ReactionName, macro_desc: MacroDescription) -> OneKeyReactions:
         commands = list(self._iter_macro_commands_from_desc(macro_desc))
-        return OneKeyReactions(on_press_key_reaction_commands=commands,
+        return OneKeyReactions(reaction_name=reaction_name,
+                               on_press_key_reaction_commands=commands,
                                on_release_key_reaction_commands=[])
 
     def _iter_macro_commands_from_desc(self, macro_desc: MacroDescription) -> Iterator[KeyCmd]:

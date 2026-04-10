@@ -3,6 +3,9 @@ from __future__ import annotations
 from both_base import KeyCode
 
 
+ReactionName = str  # p.e. 'a', '$', 'M5'
+
+
 class KeyCmdKind:  # enum
     KEY_RELEASE = 0
     KEY_PRESS = 1
@@ -90,7 +93,9 @@ ReactionCommands = list  # list[ReactionCmd]
 
 class OneKeyReactions:  # KeySetting?
 
-    def __init__(self, on_press_key_reaction_commands: ReactionCommands,
+    def __init__(self, reaction_name: ReactionName,
+                 on_press_key_reaction_commands: ReactionCommands,
                  on_release_key_reaction_commands: ReactionCommands):
+        self.reaction_name = reaction_name
         self.on_press_key_reaction_commands = on_press_key_reaction_commands
         self.on_release_key_reaction_commands = on_release_key_reaction_commands

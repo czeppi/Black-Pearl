@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from left_keyboardcreator import KeyboardCreator, ReactionName, _KeyReactionData
+from left_keyboardcreator import KeyboardCreator, _KeyReactionData
 from left_logging import LogItem, LogItemDumper, EventLogger
 from left_reactions import KeyCmdKind, KeyCmd, MouseButtonCmd, MouseWheelCmd, ReactionCmd, \
-    MouseButtonCmdKind, LogCmd
+    MouseButtonCmdKind, LogCmd, ReactionName
 
 try:
     from typing import Iterator
