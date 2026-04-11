@@ -136,8 +136,8 @@ LAYERS = {
         '· · · · · ·   · · F9 F10 F11 F12',
     ],
     RTD: [
-        '/ + ! = & ·   · PageUp   Home Up   End   ·',
-        '% * < ^ | ·   · ·        ·    ·    ·     ·',
+        '% * < ^ | ·   · PageUp   Home Up   End   ·',
+        '/ + ! = & ·   · ·        ·    ·    ·     ·',
         '· - > ? ~ ·   · PageDown Left Down Right ·',
     ],
     RTU: [
