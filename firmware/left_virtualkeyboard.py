@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+from adafruit_hid.keycode import Keycode as KC
+
 from both_base import TimeInMs, KeyCode, VirtualKeySerial, LayerID
 from both_keyboardhalf import VKeyPressEvent
-from left_reactions import KeyCmdKind, KeyCmd, OneKeyReactions, ReactionCmd, ReactionCommands
+from left_reactions import KeyCmdKind, KeyCmd, OneKeyReactions, ReactionCmd, ReactionCommands, MouseWheelCmd
 
 try:
     from typing import Iterator
@@ -203,3 +205,42 @@ class VirtualKeyboard:
             return None
         else:
             return self._deferred_keys[0].last_real_press_time + TapHoldKey.TAP_HOLD_TERM
+
+
+class RollerEncoderHandler:
+
+    def __init__(self):
+        self._forward_commands: list[ReactionCmd] = []
+        self._backward_commands: list[ReactionCmd] = []
+
+    def update(self, time: TimeInMs, encoder_offset: int, mouse_dx: int, mouse_dy: int,
+               vkey_events: list[VKeyPressEvent], vkey_reaction_commands: list[ReactionCmd]) -> Iterator[ReactionCmd]:
+        self._update_vkey_events(vkey_events=vkey_events, vkey_reaction_commands=vkey_reaction_commands)
+        self._update_mouse_events(mouse_dx=mouse_dx, mouse_dy=mouse_dy)
+
+        if encoder_offset != 0:
+            if self._forward_commands or self._backward_commands:
+                n = abs(encoder_offset)
+                if encoder_offset > 0:
+                    for _ in range(n):
+                        yield from self._forward_commands
+                else:
+                    for _ in range(n):
+                        yield from self._backward_commands
+            else:
+                yield MouseWheelCmd(offset=encoder_offset)
+
+    def _update_vkey_events(self, vkey_events: list[VKeyPressEvent], vkey_reaction_commands: list[ReactionCmd]) -> None:
+        for reaction_cmd in vkey_reaction_commands:
+            if isinstance(reaction_cmd, KeyCmd):
+                key_cmd = reaction_cmd
+                if key_cmd.kind == KeyCmdKind.KEY_PRESS and key_cmd.key_code in [KC.A, KC.SPACE]:
+                    self._forward_commands = [KeyCmd(kind=KeyCmdKind.KEY_PRESS, key_code=key_cmd.key_code),
+                                              KeyCmd(kind=KeyCmdKind.KEY_RELEASE, key_code=key_cmd.key_code)]
+                    self._backward_commands = [KeyCmd(kind=KeyCmdKind.KEY_PRESS, key_code=KC.BACKSPACE),
+                                              KeyCmd(kind=KeyCmdKind.KEY_RELEASE, key_code=KC.BACKSPACE)]
+
+    def _update_mouse_events(self, mouse_dx: int, mouse_dy: int) -> None:
+        if mouse_dx != 0 or mouse_dy != 0:
+            self._forward_commands.clear()
+            self._backward_commands.clear()

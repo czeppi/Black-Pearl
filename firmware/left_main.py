@@ -4,6 +4,7 @@ from left_keyboardcreator import KeyboardCreator, _KeyReactionData
 from left_logging import LogItem, LogItemDumper, EventLogger
 from left_reactions import KeyCmdKind, KeyCmd, MouseButtonCmd, MouseWheelCmd, ReactionCmd, \
     MouseButtonCmdKind, LogCmd, ReactionName
+from left_virtualkeyboard import RollerEncoderHandler
 
 try:
     from typing import Iterator
@@ -144,6 +145,7 @@ class LeftKeyboardSide:
         self._virt_keyboard = creator.create()
         self._reaction_map = creator.create_reaction_map()
         self._key_code_map = creator.create_key_code_map()
+        self._roller_encoder_handler = RollerEncoderHandler()
 
         self._kbd_device = Keyboard(usb_hid.devices)
         self._mouse_device = Mouse(usb_hid.devices)
@@ -182,7 +184,6 @@ class LeftKeyboardSide:
         encoder_offset = self._roller_encoder.update()
         if encoder_offset != 0:
             _print(f'encoder_offset={encoder_offset}')
-            self._mouse_device.move(wheel=encoder_offset)
 
         mouse_dx = mouse_dy = 0
         other_vkey_events: list[VKeyPressEvent] = []
@@ -217,13 +218,21 @@ class LeftKeyboardSide:
 
         if queue_item.encoder_offset != 0:
             _print(f'mouse wheel: {queue_item.encoder_offset}')
-            self._mouse_device.move(wheel=queue_item.encoder_offset)
 
         my_vkey_events = list(self._kbd_half.update(time=queue_item.time,
                                                     cur_pressed_pkeys=queue_item.my_pressed_pkeys))
         vkey_events = queue_item.other_vkey_events + my_vkey_events
         t = time.monotonic() * 1000
-        reaction_commands = list(self._virt_keyboard.update(time=t, vkey_events=vkey_events))
+        vkey_reaction_commands = list(self._virt_keyboard.update(time=t, vkey_events=vkey_events))
+
+        encoder_reaction_commands = list(
+            self._roller_encoder_handler.update(time=t,
+                                                encoder_offset=queue_item.encoder_offset,
+                                                vkey_events=vkey_events,
+                                                vkey_reaction_commands=vkey_reaction_commands,
+                                                mouse_dx=mouse_dx, mouse_dy=mouse_dy)
+        )
+        reaction_commands = vkey_reaction_commands + encoder_reaction_commands
 
         self._event_logger.update(t=t, vkey_events=vkey_events, reaction_commands=reaction_commands)
 
