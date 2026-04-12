@@ -4,7 +4,7 @@ from left_keyboardcreator import KeyboardCreator, _KeyReactionData
 from left_logging import LogItem, LogItemDumper, EventLogger
 from left_reactions import KeyCmdKind, KeyCmd, MouseButtonCmd, MouseWheelCmd, ReactionCmd, \
     MouseButtonCmdKind, LogCmd, ReactionName
-from left_virtualkeyboard import RollerEncoderHandler
+from left_rotaryencoderhandler import RotaryEncoderHandler
 
 try:
     from typing import Iterator
@@ -145,7 +145,7 @@ class LeftKeyboardSide:
         self._virt_keyboard = creator.create()
         self._reaction_map = creator.create_reaction_map()
         self._key_code_map = creator.create_key_code_map()
-        self._roller_encoder_handler = RollerEncoderHandler()
+        self._roller_encoder_handler = RotaryEncoderHandler()
 
         self._kbd_device = Keyboard(usb_hid.devices)
         self._mouse_device = Mouse(usb_hid.devices)
@@ -228,7 +228,6 @@ class LeftKeyboardSide:
         encoder_reaction_commands = list(
             self._roller_encoder_handler.update(time=t,
                                                 encoder_offset=queue_item.encoder_offset,
-                                                vkey_events=vkey_events,
                                                 vkey_reaction_commands=vkey_reaction_commands,
                                                 mouse_dx=mouse_dx, mouse_dy=mouse_dy)
         )
